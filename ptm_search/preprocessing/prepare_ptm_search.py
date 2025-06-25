@@ -9,8 +9,8 @@ def prepare_ptm_search(config):
     home_dir = Path.home()
     module_dir = Path(__file__).parent.resolve()
 
-    ptm_search_path = home_dir / config.work_dir / f"{experiment_name}_PTM_search"
-    st_search_path = home_dir / config.work_dir / f"{experiment_name}_Standard_search"
+    ptm_search_path = home_dir / config.work_dir / f"{config.experiment_name}_PTM_search"
+    st_search_path = home_dir / config.work_dir / f"{config.experiment_name}_Standard_search"
     mgf_path = st_search_path / "full_mgf_files"
 
     # os.makedirs(ptm_search_path, exist_ok=True)
