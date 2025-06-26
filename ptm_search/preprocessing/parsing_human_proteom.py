@@ -3,20 +3,19 @@
     замен в белковой последовательности по каждому найденному белку
 '''
 
-from tqdm import tqdm
-import os
+# from tqdm import tqdm
+# import os
 import json
-from pathlib import Path
-import random
-random.seed(42)
-from ptm_search.preprocessing.modification_name_correction import smaller_groups
+# import random
+# random.seed(42)
+# from ptm_search.preprocessing.modification_name_correction import smaller_groups
 
 '''
                     /--- smaller_groups
     parsing_human_proteom <-- get_PTMs_lists <-- get_all_accs_and_names
 '''
 
-from ptm_search.find_prot_name_sequence import get_protein_name
+# from ptm_search.find_prot_name_sequence import get_protein_name
 
 # ===============================/ Функция создает словарь accession - название белка /=================================
 def get_all_accs_and_names(df):
