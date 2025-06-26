@@ -21,7 +21,7 @@ def prepare_ptm_search(config):
             dest = mgf_dir if ext == '*.mgf' else st_search_path
             shutil.move(file, dest)
 
-    st_search_df = pd.read_csv(os.path.join(config.st_search_dir, f"union_protein.tsv"), sep='\t')
+    st_search_df = pd.read_csv(os.path.join(config.st_search_dir, f"union_proteins.tsv"), sep='\t')
     print(os.path.join(config.st_search_dir, f"union_protein.tsv"))
 
     ''' 1 '''
