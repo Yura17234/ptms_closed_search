@@ -11,19 +11,19 @@ def prepare_ptm_search(config):
 
     mgf_path = config.st_search_dir / "full_mgf_files"
 
-    # os.makedirs(ptm_search_path, exist_ok=True)
-    # so.makedirs(st_search_path, exist_ok=True)
-    # os.makedirs(mgf_path, exist_ok=True)
-    #
-    # for ext in ['*.mgf', '*.tsv', '*.pep.xml', '*.png']:
-    #     for file in glob.glob(os.path.join(home_dir, config.work_dir, ext)):
-    #         dest = mgf_path if ext == '*.mgf' else st_search_path
-    #         shutil.move(file, dest)
-    #
-    st_search_df = pd.read_csv(os.path.join(st_search_path, f"union_protein.tsv"), sep='\t')
-    print(os.path.join(st_search_path, f"union_protein.tsv"))
-    #
-    # ''' 1 '''
+    os.makedirs(ptm_search_path, exist_ok=True)
+    so.makedirs(st_search_path, exist_ok=True)
+    os.makedirs(mgf_path, exist_ok=True)
+
+    for ext in ['*.mgf', '*.tsv', '*.pep.xml', '*.png']:
+        for file in glob.glob(os.path.join(home_dir, config.work_dir, ext)):
+            dest = mgf_path if ext == '*.mgf' else st_search_path
+            shutil.move(file, dest)
+
+    st_search_df = pd.read_csv(os.path.join(config.st_search_dir, f"union_protein.tsv"), sep='\t')
+    print(os.path.join(config.st_search_dir, f"union_protein.tsv"))
+
+    ''' 1 '''
     list_of_grouped_prots_by_ptms, dict_acc_to_names = parsing_human_proteom(config, st_search_df)
     #
     # print(f'Количество белков из стандартного начального поиска: {len(list(dict_acc_to_names.keys()))}')
