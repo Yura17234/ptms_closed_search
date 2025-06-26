@@ -12,7 +12,7 @@ def prepare_ptm_search(config):
     mgf_dir = config.st_search_dir / "full_mgf_files"
 
     os.makedirs(config.ptm_search_dir, exist_ok=True)
-    so.makedirs(config.st_search_dir, exist_ok=True)
+    os.makedirs(config.st_search_dir, exist_ok=True)
     os.makedirs(mgf_dir, exist_ok=True)
 
     for ext in ['*.mgf', '*.tsv', '*.pep.xml', '*.png']:
