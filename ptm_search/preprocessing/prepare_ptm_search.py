@@ -25,8 +25,9 @@ def prepare_ptm_search(config):
     print(os.path.join(config.st_search_dir, f"union_protein.tsv"))
 
     ''' 1 '''
-    list_of_grouped_prots_by_ptms, dict_acc_to_names = parsing_human_proteom(config, st_search_df)
-    #
+    # list_of_grouped_prots_by_ptms, dict_acc_to_names = parsing_human_proteom(config, st_search_df)
+    parsing_human_proteom(config, st_search_df)
+
     # print(f'Количество белков из стандартного начального поиска: {len(list(dict_acc_to_names.keys()))}')
     # print(st_search_df.head())
     # list_of_grouped_prots_by_ptms = adding_ptm_info_from_db_ptm(list_of_grouped_prots_by_ptms,
