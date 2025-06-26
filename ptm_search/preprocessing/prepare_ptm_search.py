@@ -1,17 +1,13 @@
 from pathlib import Path
 
+from ptm_search.preprocessing.parsing_human_proteom import parsing_human_proteom
+
 def prepare_ptm_search(config):
     '''
         Prepare PTM search
     '''
 
-    current_dir = Path.cwd()
-    home_dir = Path.home()
-    module_dir = Path(__file__).parent.resolve()
-
-    ptm_search_path = home_dir / config.work_dir / f"{config.experiment_name}_PTM_search"
-    st_search_path = home_dir / config.work_dir / f"{config.experiment_name}_Standard_search"
-    mgf_path = st_search_path / "full_mgf_files"
+    mgf_path = config.st_search_path / "full_mgf_files"
 
     # os.makedirs(ptm_search_path, exist_ok=True)
     # so.makedirs(st_search_path, exist_ok=True)
@@ -23,10 +19,10 @@ def prepare_ptm_search(config):
     #         shutil.move(file, dest)
     #
     # st_search_df = pd.read_csv(os.path.join(st_search_path, f"union_protein.tsv"), sep='\t')
-
-    ''' 1 '''
-    # list_of_grouped_prots_by_ptms, dict_acc_to_names = parsing_human_proteom(ptm_search_path, config, st_search_df)
-
+    #
+    # ''' 1 '''
+    list_of_grouped_prots_by_ptms, dict_acc_to_names = parsing_human_proteom(config, st_search_df)
+    #
     # print(f'Количество белков из стандартного начального поиска: {len(list(dict_acc_to_names.keys()))}')
     # print(st_search_df.head())
     # list_of_grouped_prots_by_ptms = adding_ptm_info_from_db_ptm(list_of_grouped_prots_by_ptms,
@@ -59,7 +55,7 @@ def prepare_ptm_search(config):
     # if all(['_for_PTM.mgf' not in file for file in os.listdir(f'{base_path}/')]):
     #     make_mgfs_for_ptm(base_path, experiment_name)
 
-    print(ptm_search_path)
-    print(st_search_path)
+    print(config.ptm_search_path)
+    print(config.st_search_path)
     print(mgf_path)
     print('prepare_ptm_search -- connected')
