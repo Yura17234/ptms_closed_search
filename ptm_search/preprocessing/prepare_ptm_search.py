@@ -7,7 +7,7 @@ def prepare_ptm_search(config):
         Prepare PTM search
     '''
 
-    mgf_path = config.st_search_path / "full_mgf_files"
+    mgf_path = config.st_search_dir / "full_mgf_files"
 
     # os.makedirs(ptm_search_path, exist_ok=True)
     # so.makedirs(st_search_path, exist_ok=True)
