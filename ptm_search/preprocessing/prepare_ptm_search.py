@@ -1,4 +1,5 @@
 from pathlib import Path
+import pandas as pd
 
 from ptm_search.preprocessing.parsing_human_proteom import parsing_human_proteom
 
