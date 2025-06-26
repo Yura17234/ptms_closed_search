@@ -4,7 +4,9 @@ setup(
     name="ptm_search",
     version="0.1.0",
     packages=find_packages(),
-    install_requires=[],  # сюда добавь зависимости при необходимости
+    install_requires=[
+        "pandas>=1.0",
+    ],
     entry_points={
         'console_scripts': [
             'run_prepare_ptm_search = ptm_search.run_prepare_ptm_search:main',
