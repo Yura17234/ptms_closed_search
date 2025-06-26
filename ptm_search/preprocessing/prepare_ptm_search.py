@@ -9,15 +9,15 @@ def prepare_ptm_search(config):
         Prepare PTM search
     '''
 
-    mgf_path = config.st_search_dir / "full_mgf_files"
+    mgf_dir = config.st_search_dir / "full_mgf_files"
 
-    os.makedirs(ptm_search_path, exist_ok=True)
-    so.makedirs(st_search_path, exist_ok=True)
-    os.makedirs(mgf_path, exist_ok=True)
+    os.makedirs(config.ptm_search_dir, exist_ok=True)
+    so.makedirs(config.st_search_dir, exist_ok=True)
+    os.makedirs(mgf_dir, exist_ok=True)
 
     for ext in ['*.mgf', '*.tsv', '*.pep.xml', '*.png']:
-        for file in glob.glob(os.path.join(home_dir, config.work_dir, ext)):
-            dest = mgf_path if ext == '*.mgf' else st_search_path
+        for file in glob.glob(os.path.join(config.work_dir, ext)):
+            dest = mgf_dir if ext == '*.mgf' else st_search_path
             shutil.move(file, dest)
 
     st_search_df = pd.read_csv(os.path.join(config.st_search_dir, f"union_protein.tsv"), sep='\t')
