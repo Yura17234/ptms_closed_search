@@ -18,7 +18,8 @@ def prepare_ptm_search(config):
     #         dest = mgf_path if ext == '*.mgf' else st_search_path
     #         shutil.move(file, dest)
     #
-    # st_search_df = pd.read_csv(os.path.join(st_search_path, f"union_protein.tsv"), sep='\t')
+    st_search_df = pd.read_csv(os.path.join(st_search_path, f"union_protein.tsv"), sep='\t')
+    print(os.path.join(st_search_path, f"union_protein.tsv"))
     #
     # ''' 1 '''
     list_of_grouped_prots_by_ptms, dict_acc_to_names = parsing_human_proteom(config, st_search_df)
