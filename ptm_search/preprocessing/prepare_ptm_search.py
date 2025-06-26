@@ -62,5 +62,5 @@ def prepare_ptm_search(config):
 
     print(config.ptm_search_dir)
     print(config.st_search_dir)
-    print(mgf_path)
+    print(mgf_dir)
     print('prepare_ptm_search -- connected')
