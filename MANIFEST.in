@@ -1,0 +1,3 @@
+include ptm_search/data/*.json
+include ptm_search/data/*.json.gz
+include ptm_search/configs/*.cfg
