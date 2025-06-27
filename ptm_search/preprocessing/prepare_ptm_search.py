@@ -22,7 +22,7 @@ def prepare_ptm_search(config):
     os.makedirs(mgf_dir, exist_ok=True)
 
     for ext in ['*.mgf', '*.tsv', '*.pep.xml', '*.png']:
-        for file in glob.glob(config.work_dir / ext):
+        for file in glob.glob(str(config.work_dir / ext)):
             dest = mgf_dir if ext == '*.mgf' else st_search_path
             shutil.move(file, dest)
 
