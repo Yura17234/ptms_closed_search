@@ -27,11 +27,7 @@ def multiple_search(config):
         # === Запуск IdentiPy ===
         # mgf_pattern = str(config.work_dir / "*.mgf")
         mgf_files = list(config.work_dir.glob('*.mgf'))
-        identipy_cmd = [
-            "identipy",
-            mgf_files,
-            "-cfg", str(cfg_path)
-        ]
+        identipy_cmd = ["identipy"] + mgf_files + ["-cfg", str(cfg_path)]
 
         try:
             subprocess.run(identipy_cmd, check=True)
