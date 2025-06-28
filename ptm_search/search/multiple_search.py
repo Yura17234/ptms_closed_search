@@ -25,15 +25,16 @@ def multiple_search(config):
         print(f"{'':-^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':-^{50}}")
 
         # === Запуск IdentiPy ===
-        mgf_pattern = str(config.work_dir / "*.mgf")
+        # mgf_pattern = str(config.work_dir / "*.mgf")
+        mgf_files = list(config.work_dir.glob('*.mgf'))
         identipy_cmd = [
             "identipy",
-            mgf_pattern,
+            mgf_files,
             "-cfg", str(cfg_path)
         ]
 
         try:
-            subprocess.run(identipy_cmd, shell=True, check=True)
+            subprocess.run(identipy_cmd, check=True)
         except subprocess.CalledProcessError as e:
             print(f"\nОшибка при запуске IdentiPy:\n{e}")
             continue
