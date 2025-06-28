@@ -91,7 +91,7 @@ def get_PTMs_lists(query_text, modres_file, list_of_msms_proteins):
     modres_file.close()
 
     print(f'Словарь модификаций и их белков:')
-    print('\n'.join(map(str, [f'{dict_elm} : {[*PTMs_groups[dict_elm].keys()][0:5]}' for dict_elm in random.sample(PTMs_groups.keys(), 5)])))
+    print('\n'.join(map(str, [f'{dict_elm} : {[*PTMs_groups[dict_elm].keys()][0:5]}' for dict_elm in random.sample(list(PTMs_groups.keys()), 5)])))
     print(f'Число модификаций, которые не узнал встроенный словарь: {len(set(list_of_missed_modifs))}\n')
     print(f'Список модификаций, которые не узнал встроенный словарь: {set(list_of_missed_modifs)}\n')
     return PTMs_groups

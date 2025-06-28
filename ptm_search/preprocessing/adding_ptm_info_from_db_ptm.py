@@ -1,6 +1,5 @@
 import json
 import gzip
-import os
 from tqdm import tqdm
 from pathlib import Path
 

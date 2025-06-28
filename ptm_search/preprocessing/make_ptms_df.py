@@ -14,7 +14,7 @@ import os
 def make_df_of_PTMs(group_by_mod_res, dict_acc_to_names, grouped_modres_file, config):
     print(f'\nВид списков ПТМ:')
 
-    print( '\n'.join(map(str, [f'{dict_elm} : {[*group_by_mod_res[dict_elm]][0:5]}' for dict_elm in random.sample(group_by_mod_res.keys(), 5)] )) )
+    print( '\n'.join(map(str, [f'{dict_elm} : {[*group_by_mod_res[dict_elm]][0:5]}' for dict_elm in random.sample(list(group_by_mod_res.keys()), 5)] )) )
     print(f'Число ПТМ: {len(group_by_mod_res.keys())}\n')
 
     # Создание текстового файла и датафрейма по группам белков по их модификациям
