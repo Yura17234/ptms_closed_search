@@ -1,6 +1,7 @@
 import subprocess
 import pandas as pd
 from pyteomics import pepxml
+import os
 
 def multiple_search(config):
     '''
@@ -34,6 +35,8 @@ def multiple_search(config):
         except subprocess.CalledProcessError as e:
             print(f"\nОшибка при запуске IdentiPy:\n{e}")
             continue
+
+        os.unlink(str(config.work_dir / '*.pep.xml'))
 
         # === Сбор результатов .pep.xml ===
         ptm_all_df = pd.DataFrame()
