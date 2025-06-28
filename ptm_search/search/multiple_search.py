@@ -33,7 +33,7 @@ def multiple_search(config):
         ]
 
         try:
-            subprocess.run(identipy_cmd, check=True)
+            subprocess.run(identipy_cmd, shell=True, check=True)
         except subprocess.CalledProcessError as e:
             print(f"\nОшибка при запуске IdentiPy:\n{e}")
             continue
