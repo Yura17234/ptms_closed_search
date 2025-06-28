@@ -21,7 +21,7 @@ def make_mgf_files_for_ptm(file_name0):
     dict_mgf0 = pyteomics.mgf.IndexedMGF(str(mgf_dir / f'{file_name0.split(".")[0]}.mgf'))
     temporary_spectra_list0 = union_PSMs_df.query(f'file == "{file_name0.split(".")[0]}.pep.xml"')['spectrum']
 
-    outmgf = open(config.ptm_search_dir / f'{file_name0.split(".")[0]}_for_PTM.mgf', 'w')
+    outmgf = open(config.work_dir / f'{file_name0.split(".")[0]}_for_PTM.mgf', 'w')
     for spectrum in dict_mgf0:
 
         if spectrum['params']['title'] not in list(temporary_spectra_list0):
@@ -49,11 +49,11 @@ def make_mgf_files_for_ptm_multiprocessing(mgf_files_list0, union_PSMs_df0, mgf_
         for filename in results:
             print(f'{filename.split(".")[0]}_for_PTM.mgf --> Done!\n')
 
-# =====================/ Открытие необходимых файлов на чтение и запись. Запуск внутренных функций /====================
+# ---------------------/ Открытие необходимых файлов на чтение и запись. Запуск внутренных функций /--------------------
 def make_mgfs_for_ptm(mgf_dir, config):
     text5 = ' Создание mgf-файлов только с не идентифицированными спектрами для PTM-поиска '
     number5 = int(round((200 - len(text5)) / 2, 0))
-    print(f'{text5:.^{number5}}')
+    print(f'\n{text5:.^{number5}}')
     union_PSMs_df = pd.read_csv(config.st_search_dir / 'union_PSMs.tsv', sep='\t')
     mgf_files_list = [file for file in os.listdir(mgf_dir) if '.mgf' in file]
     make_mgf_files_for_ptm_multiprocessing(mgf_files_list, union_PSMs_df, mgf_dir, config)

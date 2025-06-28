@@ -23,9 +23,7 @@ def make_config_files(list_of_MOD_RES, config, variant_of_search_):
     # Config-файл с параметрами стандартного запуска identipy
     st_search_config = configparser.ConfigParser()
     st_search_config.sections()
-    st_search_config.read(str(config.base_config_path))
-    print(config.base_config_path)
-    print(Path(config.base_config_path).exists())
+    st_search_config.read(config.base_config_path)
 
     configs_full_search_dir = '_'
     configs_fast_search_dir = '_'

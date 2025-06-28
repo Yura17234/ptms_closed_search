@@ -65,7 +65,4 @@ def prepare_ptm_search(config):
     if all(['_for_PTM.mgf' not in file for file in os.listdir(f'{config.ptm_search_dir}')]):
         make_mgfs_for_ptm(mgf_dir, config)
 
-    print(config.ptm_search_dir)
-    print(config.st_search_dir)
-    print(mgf_dir)
-    print('prepare_ptm_search -- connected')
+    print('prepare_ptm_search -- Done !')
