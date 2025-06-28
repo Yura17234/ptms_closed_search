@@ -7,8 +7,8 @@ def multiple_search(config):
         Multiple search
     '''
 
-    configs_dir = config.ptm_search_dir / f"{config.experiment_name}_Configs_{config.search_mode}"
-    results_dir = config.ptm_search_dir / f"{config.experiment_name}_result_{config.search_mode}"
+    configs_dir = config.ptm_search_dir / f"{config.analysis_index}_Configs_{config.search_mode}"
+    results_dir = config.ptm_search_dir / f"{config.analysis_index}_result_{config.search_mode}"
     results_dir.mkdir(exist_ok=True)
 
     config_files = sorted(configs_dir.glob("*.cfg"))
@@ -22,7 +22,7 @@ def multiple_search(config):
             print(f"Pass {mod_name} ({count}/{len(config_files)})")
             continue
 
-        print(f"{'':=^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':=^{50}}")
+        print(f"{'':-^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':-^{50}}")
 
         # === Запуск IdentiPy ===
         mgf_pattern = str(config.work_dir / "*.mgf")
