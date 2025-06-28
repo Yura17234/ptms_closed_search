@@ -18,7 +18,7 @@ def init_pool(union_PSMs_df0, mgf_dir0, config0):
 # Осуществление записи списка спектров в новый mgf-файл
 def make_mgf_files_for_ptm(file_name0):
 
-    dict_mgf0 = pyteomics.mgf.IndexedMGF(mgf_dir / f'{file_name0.split(".")[0]}.mgf')
+    dict_mgf0 = pyteomics.mgf.IndexedMGF(str(mgf_dir / f'{file_name0.split(".")[0]}.mgf'))
     temporary_spectra_list0 = union_PSMs_df.query(f'file == "{file_name0.split(".")[0]}.pep.xml"')['spectrum']
 
     outmgf = open(config.ptm_search_dir / f'{file_name0.split(".")[0]}_for_PTM.mgf', 'w')
