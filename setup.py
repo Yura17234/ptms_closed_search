@@ -24,6 +24,7 @@ setup(
         "configparser>=5.0",
         "unipressed>=0.3.1",
         "identipy @ git+https://github.com/levitsky/identipy.git#egg=identipy",
+        "setuptools>=65.0.0",
     ],
     entry_points={
         'console_scripts': [
