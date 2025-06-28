@@ -7,8 +7,8 @@ def multiple_search(config):
         Multiple search
     '''
 
-    configs_dir = config.ptm_search_dir / f"{config.analysis_index}_Configs_{config.search_mode}"
-    results_dir = config.ptm_search_dir / f"{config.analysis_index}_result_{config.search_mode}"
+    configs_dir = config.ptm_search_dir / f"{config.experiment_name}_Configs_{config.search_mode}"
+    results_dir = config.ptm_search_dir / f"{config.experiment_name}_result_{config.search_mode}"
     results_dir.mkdir(exist_ok=True)
 
     config_files = sorted(configs_dir.glob("*.cfg"))
