@@ -74,8 +74,8 @@ def make_fasta_file(proteins_from_msms_with_ptms_, ptm_groups_, fasta_file_, con
             handle3.write(Additional_proteins_for_search_text)
 
         # Добавление в малые базы поиска decoy-последовательности
-        pyteomics.fasta.write_decoy_db(source=fasta_for_fast_search_dir / f'{modif2}_{config.analysis_index}.fasta',
-                                       output=fasta_for_fast_search_dir / f'{modif2}_{config.analysis_index}_reverse.fasta',
+        pyteomics.fasta.write_decoy_db(source=str(fasta_for_fast_search_dir / f'{modif2}_{config.analysis_index}.fasta'),
+                                       output=str(fasta_for_fast_search_dir / f'{modif2}_{config.analysis_index}_reverse.fasta'),
                                        mode='reverse', prefix='DECOY_', decoy_only=False)
 
 # ---------------------/ Открытие необходимых файлов на чтение и запись. Запуск внутренных функций /--------------------
