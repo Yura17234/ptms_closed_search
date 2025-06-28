@@ -65,6 +65,12 @@ def make_config_files(list_of_MOD_RES, config, variant_of_search_):
 
         updater["performance"]["processes"].value = st_search_config["performance"]["processes"]
 
+        updater["search"]["precursor accuracy unit"].value = st_search_config["search"]["precursor accuracy unit"]
+        updater["search"]["precursor accuracy left"].value = st_search_config["search"]["precursor accuracy left"]
+        updater["search"]["precursor accuracy right"].value = st_search_config["search"]["precursor accuracy right"]
+        updater["search"]["product accuracy unit"].value = st_search_config["search"]["product accuracy unit"]
+        updater["search"]["product accuracy"].value = st_search_config["search"]["product accuracy"]
+
         # Сохранение config-файла
         modif2 = modif.replace(' ', '_').replace(';', '').replace('/', '_')
         if variant_of_search_ == 1:
