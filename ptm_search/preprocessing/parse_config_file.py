@@ -27,15 +27,12 @@ def make_config_files(list_of_MOD_RES, config, variant_fo_search_):
 
     configs_full_search_dir = '_'
     configs_fast_search_dir = '_'
-    try:
-        if variant_fo_search_ == 1:
-            configs_full_search_dir = config.ptm_search_dir / f'{config.experiment_name}_Configs_full_search'
-            os.makedirs(configs_full_search_dir, exist_ok=True)
-        elif variant_fo_search_ == 2:
-            configs_fast_search_dir = config.ptm_search_dir / f'{config.experiment_name}_Configs_fast_search'
-            os.makedirs(configs_fast_search_dir, exist_ok=True)
-    except OSError as error:
-        print(error)
+    if variant_fo_search_ == 1:
+        configs_full_search_dir = config.ptm_search_dir / f'{config.experiment_name}_Configs_full_search'
+        os.makedirs(configs_full_search_dir, exist_ok=True)
+    elif variant_fo_search_ == 2:
+        configs_fast_search_dir = config.ptm_search_dir / f'{config.experiment_name}_Configs_fast_search'
+        os.makedirs(configs_fast_search_dir, exist_ok=True)
 
     f = []
     count = 0
