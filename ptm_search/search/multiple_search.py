@@ -36,7 +36,7 @@ def multiple_search(config):
             print(f"\nОшибка при запуске IdentiPy:\n{e}")
             continue
 
-        os.unlink(str(config.work_dir / '*.pep.xml'))
+        # os.unlink(str(config.work_dir / '*.pep.xml'))
 
         # === Сбор результатов .pep.xml ===
         ptm_all_df = pd.DataFrame()
