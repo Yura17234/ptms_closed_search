@@ -24,7 +24,7 @@ def prepare_ptm_search(config):
 
     for ext in ['*.mgf', '*.tsv', '*.pep.xml', '*.png']:
         for file in glob.glob(str(config.work_dir / ext)):
-            dest = mgf_dir if ext == '*.mgf' else st_search_path
+            dest = mgf_dir if ext == '*.mgf' else config.st_search_dir
             shutil.move(file, dest)
 
     st_search_df = pd.read_csv(config.st_search_dir / f"union_proteins.tsv", sep='\t')
