@@ -28,10 +28,10 @@ def make_config_files(list_of_MOD_RES, config, variant_of_search_):
     configs_full_search_dir = '_'
     configs_fast_search_dir = '_'
     if variant_of_search_ == 1:
-        configs_full_search_dir = config.ptm_search_dir / f'{config.experiment_name}_Configs_full_search'
+        configs_full_search_dir = config.ptm_search_dir / f'{config.analysis_index}_Configs_full_search'
         os.makedirs(configs_full_search_dir, exist_ok=True)
     elif variant_of_search_ == 2:
-        configs_fast_search_dir = config.ptm_search_dir / f'{config.experiment_name}_Configs_fast_search'
+        configs_fast_search_dir = config.ptm_search_dir / f'{config.analysis_index}_Configs_fast_search'
         os.makedirs(configs_fast_search_dir, exist_ok=True)
 
     f = []
@@ -58,7 +58,7 @@ def make_config_files(list_of_MOD_RES, config, variant_of_search_):
             updater["input"]["database"].value = f'{str(config.ptm_search_dir)}/{config.experiment_name}_PTMs_search_{config.analysis_index}_reverse.fasta'
         elif variant_of_search_ == 2: # Добавление полного пути к малым базам данных поиска
             modif_for_fasta = modif.replace(' ', '_').replace(';', '').replace('/', '_')
-            updater["input"]["database"].value = f'{str(config.ptm_search_dir)}/{config.experiment_name}_fasta_for_fast_search/{modif_for_fasta}_{config.analysis_index}_reverse.fasta'
+            updater["input"]["database"].value = f'{str(config.ptm_search_dir)}/{config.analysis_index}_fasta_for_fast_search/{modif_for_fasta}_{config.analysis_index}_reverse.fasta'
 
         # Перенос остальных параметров стандартного поиска
         updater["search"]["number of missed cleavages"].value = st_search_config["search"]["number of missed cleavages"]
