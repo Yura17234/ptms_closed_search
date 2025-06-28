@@ -12,10 +12,17 @@ setup(
         ],
     },
     install_requires=[
-        "pandas>=1.0",
-        "unipressed>=1.0.0",
-        "pyteomics>=4.0.0",
-        "configupdater>=1.0",
+        "pandas>=1.3",
+        "numpy>=1.21",
+        "scipy>=1.7",
+        "matplotlib>=3.4",
+        "seaborn>=0.11",
+        "tqdm>=4.62",
+        "lxml>=4.6",
+        "pyteomics>=4.5",
+        "ConfigUpdater>=3.1",
+        "configparser>=5.0",
+        "unipressed>=0.3.1",
     ],
     entry_points={
         'console_scripts': [
