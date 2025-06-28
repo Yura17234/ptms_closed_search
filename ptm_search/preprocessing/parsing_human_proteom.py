@@ -20,14 +20,12 @@ def get_all_accs_and_names(df):
     accs_and_names_dict = {}
     for list_accs in tqdm(df["dbname"]):
         for acc in list(list_accs[2:-2].split("', '")):
-            print(acc.split('|')[1])
-            print(get_protein_name(acc.split('|')[1]))
             if acc.split('|')[1] in accs_and_names_dict.keys():
                 continue
             accs_and_names_dict[acc.split('|')[1]] = get_protein_name(acc.split('|')[1])
 
     print(f'Вид словаря accession - название белка:')
-    print( '\n'.join(map(str, [ f'{dict_elm} : {accs_and_names_dict[dict_elm]}' for dict_elm in random.sample(accs_and_names_dict.keys(), 5)] )) )
+    print( '\n'.join(map(str, [ f'{dict_elm} : {accs_and_names_dict[dict_elm]}' for dict_elm in random.sample(list(accs_and_names_dict.keys()), 5)] )) )
     return accs_and_names_dict
 
 # ---------------------------------/ Функция формирует списки белков по каждой PTM /------------------------------------
