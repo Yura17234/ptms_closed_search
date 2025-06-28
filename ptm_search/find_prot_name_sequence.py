@@ -13,6 +13,7 @@ with open(module_dir / 'data' / 'protein_names_dict.json', 'r', encoding='utf-8'
 protein_names_dict = json.loads(protein_names_dict_json)
 
 def get_protein_name(accession):
+    print(protein_names_dict.values())
     try:
         name = protein_names_dict[accession]
         return name
