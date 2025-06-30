@@ -1,7 +1,6 @@
 import subprocess
 import pandas as pd
 from pyteomics import pepxml
-import os
 
 def multiple_search(config):
     '''
@@ -26,7 +25,6 @@ def multiple_search(config):
         print(f"{'':-^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':-^{50}}")
 
         # === Запуск IdentiPy ===
-        # mgf_pattern = str(config.work_dir / "*.mgf")
         mgf_files = list(config.work_dir.glob('*.mgf'))
         identipy_cmd = ["identipy"] + mgf_files + ["-cfg", str(cfg_path)]
 
@@ -35,8 +33,6 @@ def multiple_search(config):
         except subprocess.CalledProcessError as e:
             print(f"\nОшибка при запуске IdentiPy:\n{e}")
             continue
-
-        # os.unlink(str(config.work_dir / '*.pep.xml'))
 
         # === Сбор результатов .pep.xml ===
         ptm_all_df = pd.DataFrame()
@@ -47,14 +43,13 @@ def multiple_search(config):
             ptm_all_df = pd.concat([ptm_all_df, df_pep], ignore_index=True)
 
         # === Сохраняем результаты ===
-        mod_result_dir = results_dir / mod_name
-        mod_result_dir.mkdir(exist_ok=True)
-
-        result_csv_path = results_dir / mod_name / "result.csv"
+        # mod_result_dir = results_dir / mod_name
+        # mod_result_dir.mkdir(exist_ok=True)
+        result_csv_path = results_dir / f'{mod_name}_result.csv'
         ptm_all_df.to_csv(result_csv_path, index=False)
 
         # Удаление .pep.xml
         for f in config.work_dir.glob("*.pep.xml"):
             f.unlink()
 
-    print('multiple_search -- Done !')
+    print('Multiple search -- Done !')
