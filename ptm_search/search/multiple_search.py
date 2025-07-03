@@ -14,8 +14,7 @@ def multiple_search(config):
     config_files = sorted(configs_dir.glob("*.cfg"))
     print(f'\nНайдено конфигураций:\n{len(config_files)}\n')
 
-    already_done = {d.stem for d in results_dir.iterdir() if d.is_file()}
-    print(already_done)
+    already_done = {d.stem.split('_result')[0] for d in results_dir.iterdir() if d.is_file()}
 
     for count, cfg_path in enumerate(config_files, 1):
         mod_name = cfg_path.stem
