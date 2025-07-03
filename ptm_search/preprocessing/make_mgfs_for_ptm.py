@@ -30,8 +30,10 @@ def make_mgf_files_for_ptm(file_name0):
             outmgf.write('TITLE=%s\n' % (spectrum['params']['title']))
             outmgf.write(f'PEPMASS={spectrum["params"]["pepmass"][0]:.{len(str(spectrum["params"]["pepmass"][0]).split(".")[1])}f}\n')
             outmgf.write(f'RTINSECONDS={float(spectrum["params"]["rtinseconds"]):.{len(str(spectrum["params"]["rtinseconds"]).split(".")[1])}f}\n')
-            print(spectrum['params'])
-            outmgf.write('CHARGE=%d+\n' % (spectrum['params']['charge'][0],))
+            try:
+                outmgf.write('CHARGE=%d+\n' % (spectrum['params']['charge'][0],))
+            except:
+                pass
             outmgf.write('SCANS=%s\n' % (spectrum['params']['scans']))
 
             for m_z, intensity in zip(spectrum['m/z array'], spectrum['intensity array']):
