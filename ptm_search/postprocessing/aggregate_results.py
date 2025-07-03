@@ -6,7 +6,7 @@ from ptm_search.postprocessing.fdr_filtration import (
     threshold_calculation_identipy,
     threshold_calculation_for_PTM_by_ranks,
 )
-from ptm_search.postprocessing.get_plots_from_result_of_analysis import get_plots_from_result_of_analysis
+from ptm_search.postprocessing.analysis_of_result import get_plots_from_result_of_analysis
 
 pd.options.mode.chained_assignment = None
 
