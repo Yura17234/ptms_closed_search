@@ -1,6 +1,7 @@
 import subprocess
 import pandas as pd
 from pyteomics import pepxml
+import os
 
 def multiple_search(config):
     '''
@@ -25,14 +26,15 @@ def multiple_search(config):
         print(f"{'':-^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':-^{50}}")
 
         # === Запуск IdentiPy ===
-        mgf_files = list(config.work_dir.glob('*.mgf'))
-        identipy_cmd = ["identipy"] + mgf_files + ["-cfg", str(cfg_path)]
-
-        try:
-            subprocess.run(identipy_cmd, check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"\nОшибка при запуске IdentiPy:\n{e}")
-            continue
+        os.system(f'identipy {str(config.work_dir)}/*.mgf -cfg {str(cfg_path)}')
+        # mgf_files = list(config.work_dir.glob('*.mgf'))
+        # identipy_cmd = ["identipy"] + mgf_files + ["-cfg", str(cfg_path)]
+        #
+        # try:
+        #     subprocess.run(identipy_cmd, check=True)
+        # except subprocess.CalledProcessError as e:
+        #     print(f"\nОшибка при запуске IdentiPy:\n{e}")
+        #     continue
 
         # === Сбор результатов .pep.xml ===
         ptm_all_df = pd.DataFrame()
