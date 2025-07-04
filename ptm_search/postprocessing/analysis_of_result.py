@@ -73,7 +73,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs, SS_peptides, config, fdr_
     PTM_PSMs = clear_acc_and_add_alt_acc(PTM_PSMs)
     print(PTM_PSMs.shape)
 
-    info_from_uniprot = pd.read_csv(config.ptm_search_dir / f'{config.experiment_name}_all_PTM_info_from_UniProt.csv')
+    info_from_uniprot = pd.read_csv(config.ptm_search_dir / f'{config.experiment_name}_PTM_info_from_UniProt_{config.analysis_index}.csv')
     if config.search_mode == 'fast_search':
         new_PTM_PSMs = pd.DataFrame(columns=list(PTM_PSMs.columns))
         for ptm in list(set(PTM_PSMs['Search'])):
