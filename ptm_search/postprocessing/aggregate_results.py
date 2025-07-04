@@ -75,7 +75,7 @@ def aggregate_results(config):
         ss_psms['PTM'] = '-'
         ss_psms['variable'] = '-'
 
-        ptm_uniprot_info_df = pd.read_csv(config.ptm_search_dir / f"{config.experiment_name}_{config.analysis_index}_PTM_info_from_UniProt.csv")
+        ptm_uniprot_info_df = pd.read_csv(config.ptm_search_dir / f"{config.experiment_name}_PTM_info_from_UniProt_{config.analysis_index}.csv")
 
         all_fdr_ptm_psms = pd.DataFrame()
         raw_result_dir = config.ptm_search_dir / f'{config.analysis_index}_result_{config.search_mode}'
