@@ -11,7 +11,7 @@ from scipy.ndimage import gaussian_filter
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import SplineTransformer
-from sklearn.linear_model import RidgeCV
+from sklearn.linear_model import Ridge
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 
@@ -55,78 +55,107 @@ def threshold_calculation_identipy(df_Decoy, df_Target, log_file):
             log_file.write(f'\n===============\nFDR: {FDR}, rank threshold: {i}')
             return FDR_threshold, thresholds_q_values_dict
 
-def threshold_calculation_for_PTM_by_ranks(df_Decoy_FS_and_PTM, df_Target_FS_and_PTM, log_dir, log_file, config, ptm_name):
-    df_Target_FS = df_Target_FS_and_PTM.query("PTM == '-'")
-    df_Target_PTM = df_Target_FS_and_PTM.query("PTM == '+'")
-    df_Decoy_FS = df_Decoy_FS_and_PTM.query("PTM == '-'")
-    df_Decoy_PTM = df_Decoy_FS_and_PTM.query("PTM == '+'")
+def calc_err_threshold(thresholds, errs):
+    mean_error = np.mean(errs)
+    std_error = np.std(errs)
+    z_score_threshold = mean_error + 1 * std_error  # можно 3*std — для более строгого отсева
+
+    # Находим первый индекс, где ошибка превышает порог
+    idx1 = np.argmax(errs > z_score_threshold)
+    err_threshold = thresholds[idx1] if idx1 < len(thresholds) else None
+    return err_threshold
+
+# ----------------------------------------------------------------------------------------------------------------------
+def generate_knots(first_ref_threshold_, rank_before_err_, index_before_err_, thresholds_):
+    if rank_before_err_ != 0:
+        thresholds_before_err_ = thresholds_[0:index_before_err_]
+        return thresholds_before_err_, np.sort(np.array(
+            np.linspace(0, first_ref_threshold_, 10, dtype=int).tolist() +
+            [int(round((first_ref_threshold_ + rank_before_err_) / 2, 0)), rank_before_err_]
+        )).reshape(-1, 1)
+    elif rank_before_err_ != 0 and rank_before_err_ < first_ref_threshold_:
+        thresholds_before_err_ = thresholds_[0:index_before_err_]
+        return thresholds_before_err_, np.sort(np.array(
+        np.linspace(0, rank_before_err_, 12, dtype=int).tolist()
+        )).reshape(-1, 1)
+    else:
+        thresholds_before_err_ = thresholds_[0:index_before_err_]
+        return thresholds_before_err_, np.sort(np.array(
+            np.linspace(0, first_ref_threshold_, 6, dtype=int).tolist() +
+            np.linspace(first_ref_threshold_, max(thresholds_before_err_), 5, dtype=int).tolist()[1:]
+        )).reshape(-1, 1)
+
+def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and_ptm, log_dir, log_file, config, ptm_name):
+    # df_target_ss = df_target_ss_and_ptm.query("PTM == '-'")
+    df_target_ptm = df_target_ss_and_ptm.query("PTM == '+'")
+    # df_decoy_ss = df_decoy_ss_and_ptm.query("PTM == '-'")
+    df_decoy_ptm = df_decoy_ss_and_ptm.query("PTM == '+'")
 
     # ------------------------------------------------------------------------------------------------------------------
-    proportions_decoy_target = []
-    thresholds_decoy_target = []
+    proportions_decoy_target, thresholds_decoy_target = [], []
 
-    for q in tqdm(np.linspace(0, int(df_Target_FS['rank'].max()), 1000, dtype=int)):
-        if df_Target_PTM.query(f'rank >= {q}').shape[0] == 0 and df_Target_FS.query(f'rank >= {q}').shape[0] == 0:
+    thresholds_decoy_target = np.linspace(0, int(df_target_ss_and_ptm['rank'].max()), 500, dtype=int)
+    for q in tqdm(thresholds_decoy_target):
+        x = df_decoy_ss_and_ptm.query(f'rank >= {q}').shape[0]
+        y = df_target_ss_and_ptm.query(f'rank >= {q}').shape[0]
+
+        if y == 0:
             break
-        x = df_Decoy_PTM.query(f'rank >= {q}').shape[0] + df_Decoy_FS.query(f'rank >= {q}').shape[0]
-        y = df_Target_PTM.query(f'rank >= {q}').shape[0] + df_Target_FS.query(f'rank >= {q}').shape[0]
-
         proportions_decoy_target.append(x / y)
-        thresholds_decoy_target.append(q)
 
-    gaussian_filter_proportions_decoy_target = gaussian_filter(np.gradient(proportions_decoy_target), sigma=20)
-    first_threshold_index = [x[0] for x in zip(thresholds_decoy_target, gaussian_filter_proportions_decoy_target) if x[1] == min(gaussian_filter_proportions_decoy_target)][0]
-    # for u in range(0, gaussian_filter_proportions_decoy_target.shape[0]):
-    #     if gaussian_filter_proportions_decoy_target[u] > gaussian_filter_proportions_decoy_target[u - 1]:
-    #
-    #         first_threshold_index = thresholds_decoy_target[u]
-    #         break
+    sigma_val = len(np.gradient(proportions_decoy_target)) / 100
+    gaussian_filter_proportions_decoy_target = gaussian_filter(np.gradient(proportions_decoy_target), sigma=sigma_val)
+
+    index_of_min = np.where(
+        np.min(gaussian_filter_proportions_decoy_target) == gaussian_filter_proportions_decoy_target)
+    first_ref_threshold = thresholds_decoy_target[index_of_min][0]
     # ------------------------------------------------------------------------------------------------------------------
-    proportions = []
-    thresholds = []
-    error_propagation = []
+    thresholds = np.linspace(df_decoy_ptm['rank'].min(), df_decoy_ptm['rank'].max(), 1000, dtype=int)
 
-    for q in tqdm(np.linspace(int(df_Decoy_PTM['rank'].min()), int(df_Decoy_PTM['rank'].max()), 1000, dtype=int)):
-        if df_Decoy_PTM.query(f'rank >= {q}').shape[0] == 0 and df_Decoy_FS.query(f'rank >= {q}').shape[0] == 0:
+    proportions, error_propagation = [], []
+    rank_before_err, index_before_err = 0, 0
+    for index, q in tqdm(enumerate(thresholds)):
+        x = df_decoy_ptm.query(f'rank >= {q}').shape[0]
+        y = df_decoy_ss_and_ptm.query(f'rank >= {q}').shape[0]
+
+        if y == 0:
             break
 
-        x = df_Decoy_PTM.query(f'rank >= {q}').shape[0]
-        y = df_Decoy_PTM.query(f'rank >= {q}').shape[0] + df_Decoy_FS.query(f'rank >= {q}').shape[0]
-
-        error_propagation.append( (x / y) * np.sqrt((np.sqrt(x) / x) ** 2 + (np.sqrt(y) / y) ** 2) )
+        err = (x / y) * np.sqrt((np.sqrt(x) / x) ** 2 + (np.sqrt(y) / y) ** 2)
+        error_propagation.append(err)
         proportions.append(x / y)
-        thresholds.append(q)
+        if err > 0.01 and rank_before_err == 0:
+            rank_before_err = thresholds[index - 1]
+            index_before_err = index - 1
+        if rank_before_err == 0:
+            index_before_err = index
 
-    last_rank = 0
-    index = 0
-    for u in zip(thresholds, error_propagation):
-        if u[1] >= 0.01 and last_rank == 0:
-            last_rank = thresholds[index - 1]
-            break
-        index += 1
-    # print(error_propagation)
-    # print(last_rank, index)
     # ------------------------------------------------------------------------------------------------------------------
-    knots = []
-    if last_rank != 0:
-        knots = np.linspace(0, first_threshold_index, 10, dtype=int).tolist() + [int(round((first_threshold_index+last_rank)/2, 0)), last_rank]
-        knots = np.array(knots).reshape(-1, 1)
-    elif last_rank == 0:
-        knots = np.linspace(0, first_threshold_index, 6, dtype=int).tolist() + np.linspace(first_threshold_index, max(thresholds[0:index]), 5, dtype=int).tolist()[1:]
-        knots = np.array(knots).reshape(-1, 1)
+    errors = np.array(error_propagation)
+    err_thresholds = np.array(thresholds)
 
-    X_train, X_test, y_train, y_test = train_test_split(np.array(thresholds[0:index]).reshape((-1, 1)), np.array(proportions[0:index]),
+    threshold1 = calc_err_threshold(err_thresholds, errors)
+
+    err_sigma = len(np.gradient(errors)) / 10
+    gaussian_error_propagation = gaussian_filter(np.gradient(errors), sigma=err_sigma)
+    gaus_threshold = calc_err_threshold(err_thresholds, gaussian_error_propagation)
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    thresholds_before_err, knots = generate_knots(first_ref_threshold, rank_before_err, index_before_err, thresholds)
+
+    X_train, X_test, y_train, y_test = train_test_split(np.array(thresholds_before_err).reshape((-1, 1)),
+                                                        np.array(proportions[0:index_before_err]),
                                                         test_size=0.3, random_state=42)
-
     spl = make_pipeline(
         SplineTransformer(degree=1, knots=knots, extrapolation='linear'),
-        RidgeCV(alphas=0.01)
+        Ridge()
     )
     spl.fit(X_train, y_train)
     y_pred = spl.predict(np.array(thresholds).reshape((-1, 1)))
-
     df_spline = pd.DataFrame({'thresholds': [float(w) for w in np.array(thresholds).reshape((-1, 1))],
-                       'predicted_proportions': [float(w) for w in y_pred]}).sort_values(by=["thresholds"], ascending=False)
+                              'predicted_proportions': [float(w) for w in y_pred]}).sort_values(by=["thresholds"],
+                                                                                                ascending=False)
 
     # ------------------------------------------------------------------------------------------------------------------
     fig = plt.figure(figsize=(15, 15))
@@ -136,84 +165,93 @@ def threshold_calculation_for_PTM_by_ranks(df_Decoy_FS_and_PTM, df_Target_FS_and
     plt.subplot(2, 2, 1).set_title('Decoy / Target')
     plt.scatter(thresholds_decoy_target, proportions_decoy_target, color='#ff6666', s=40, alpha=0.4,
                 edgecolors="#404040")
-    plt.axvline(x=first_threshold_index, color='red', linestyle="--")
+    plt.axvline(x=first_ref_threshold, color='red', linestyle="--")
     plt.xlabel("Порог rank")
     plt.ylabel("Пропорция (Decoy / Target)")
 
     plt.subplot(2, 2, 2).set_title('Производная ( Decoy / Target )')
     plt.plot(thresholds_decoy_target, np.gradient(proportions_decoy_target))
     plt.plot(thresholds_decoy_target, gaussian_filter_proportions_decoy_target)
-    plt.axvline(x=first_threshold_index, color='red', linestyle="--")
+    plt.axvline(x=first_ref_threshold, color='red', linestyle="--")
     plt.xlabel("Порог rank")
     plt.ylabel("Производная пропорции (Decoy / Target) ")
 
-    plt.subplot(2, 2, 3).set_title('Пропорция decoy (PTM / Unmodified)') # proportions approximation
+    plt.subplot(2, 2, 3).set_title('Пропорция decoy (PTM / Unmodified)')  # proportions approximation
     plt.scatter(thresholds, proportions, color='#3399ff', s=40, alpha=0.4, edgecolors="#404040", label='Пропорция')
     plt.plot(df_spline['thresholds'], df_spline['predicted_proportions'], color='red', label='Сплайн регрессии')
 
-    r_squared = r'$R^2 =$' + str(round(r2_score(proportions[0:index], spl.predict(np.array(thresholds[0:index]).reshape((-1, 1)))), 2))
-    log_file.write(f'R^2 = {round(r2_score(proportions[0:index], spl.predict(np.array(thresholds[0:index]).reshape((-1, 1)))), 2)}\n')
-    plt.text(X_test.max()*(85/100), y_test.max()*(90/100), r_squared, weight='bold', horizontalalignment='center')
-    rmse = r'$RMSE =$' + str(round(np.sqrt(mean_squared_error(proportions[0:index], spl.predict(np.array(thresholds[0:index]).reshape((-1, 1))))), 4))
-    log_file.write(f'RMSE = {round(np.sqrt(mean_squared_error(proportions[0:index], spl.predict(np.array(thresholds[0:index]).reshape((-1, 1))))), 4)}\n')
+    r_squared = r'$R^2 =$' + str(
+        round(r2_score(proportions[0:index_before_err], spl.predict(np.array(thresholds_before_err).reshape((-1, 1)))),
+              2))
+    # log_file.write(f'R^2 = {round(r2_score(proportions[0:index_before_err], spl.predict(np.array(thresholds_before_err).reshape((-1, 1)))), 2)}\n')
+    plt.text(X_test.max() * (85 / 100), y_test.max() * (90 / 100), r_squared, weight='bold',
+             horizontalalignment='center')
+    rmse = r'$RMSE =$' + str(round(np.sqrt(mean_squared_error(proportions[0:index_before_err], spl.predict(
+        np.array(thresholds_before_err).reshape((-1, 1))))), 4))
+    # log_file.write(f'RMSE = {round(np.sqrt(mean_squared_error(proportions[0:index_before_err], spl.predict(np.array(thresholds[0:index_before_err]).reshape((-1, 1))))), 4)}\n')
     plt.text(X_test.max() * (85 / 100), y_test.max() * (85 / 100), rmse, weight='bold', horizontalalignment='center')
 
-    plt.axvline(x=first_threshold_index, color='red', linestyle="--")
-    if last_rank != 0:
-        plt.axvline(last_rank, color="#404040", linestyle="-")
-    plt.xlabel('Порог rank') # threshhold rank
-    plt.ylabel('Пропорция') # proportion
+    plt.axvline(x=first_ref_threshold, color='red', linestyle="--")
+    if rank_before_err != 0:
+        plt.axvline(rank_before_err, color="#404040", linestyle="-")
+    plt.axvline(threshold1, color="#FF7B00", linestyle="-")
+    plt.axvline(gaus_threshold, color="#0044FF", linestyle="-")
+
+    plt.xlabel('Порог rank')  # threshhold rank
+    plt.ylabel('Пропорция')  # proportion
     plt.legend()
 
-    plt.subplot(2, 2, 4).set_title('Ошибка частного') # error propagation
+    plt.subplot(2, 2, 4).set_title('Ошибка частного')  # error propagation
     plt.scatter(thresholds, error_propagation, color='#33cc33', s=40, alpha=0.4, edgecolors="#404040")
-    if last_rank != 0:
-        plt.axvline(last_rank, color="#404040", linestyle="-")
-    plt.xlabel("Порог rank") # threshold rank
-    plt.ylabel("Ошибка частного") # error propagation
+    if rank_before_err != 0:
+        plt.axvline(rank_before_err, color="#404040", linestyle="-")
+    plt.axvline(threshold1, color="#FF7B00", linestyle="-")
+    plt.axvline(gaus_threshold, color="#0044FF", linestyle="-")
+
+    plt.xlabel("Порог rank")  # threshold rank
+    plt.ylabel("Ошибка частного")  # error propagation
 
     plt.figtext(0.5, 0.9, f'{ptm_name}', ha='center', va='center')
+
     plt.savefig(log_dir / f"{ptm_name.replace(' ', '_')}_Proportion_and_spline_regression.png", dpi=100,
                 bbox_inches='tight')
-    plt.close(fig)
     # ------------------------------------------------------------------------------------------------------------------
     # Вычисление попрога FDR на уровне 1% для PTM идентификаций
-    FDR_threshold = 0
-    list_FDRs_PTM = []
-    thresholds_q_values_dict = {}
-    for i in tqdm(np.linspace(int(df_Decoy_PTM['rank'].min()), int(df_Decoy_PTM['rank'].max()), 1000, dtype=int)[::-1]): # [::-1]
-        FDR_FS_and_PTM = df_Decoy_FS_and_PTM.query(f'rank >= {i}').shape[0] / ( df_Target_FS_and_PTM.query(f'rank >= {i}').shape[0] )# + df_Decoy_FS_and_PTM.query(f'rank >= {i}').shape[0] )
+    fdr_threshold, fdrs_ptm_list, thresholds_q_values_dict = 0, [], {}
+    for i in tqdm(thresholds[::-1]):
+        fdr = df_decoy_ss_and_ptm.query(f'rank >= {i}').shape[0] / df_target_ss_and_ptm.query(f'rank >= {i}').shape[0]
 
         try:
-            FDR_PTM = (( df_Target_FS.query(f'rank >= {i}').shape[0]+df_Target_PTM.query(f'rank >= {i}').shape[0] ) / df_Target_PTM.query(f'rank >= {i}').shape[0]) * (spl.predict(np.array([i]).reshape((-1, 1)))[0]) * (FDR_FS_and_PTM)
-            list_FDRs_PTM.append(FDR_PTM)
+            lambda_coef = df_target_ss_and_ptm.query(f'rank >= {i}').shape[0] / \
+                          df_target_ptm.query(f'rank >= {i}').shape[0]
+            gamma_coef = spl.predict(np.array([i]).reshape((-1, 1)))[0]
+            fdr_ptm = lambda_coef * gamma_coef * fdr
+            fdrs_ptm_list.append(fdr_ptm)
         except:
             print('BAD')
-            try:
-                print(list_FDRs_PTM[-1], FDR_threshold)
-                log_file.write(f'BAD\n{list_FDRs_PTM[-1]}, {FDR_threshold}\n\n')
-            except:
-                break
-            break
+            # print(fdrs_ptm_list[-1], fdr_threshold)
+            return fdr_threshold, thresholds_q_values_dict
 
         # print(FDR_PTM, FDR_threshold)
-        FDR_threshold = i
-        thresholds_q_values_dict[i] = FDR_PTM
-        if FDR_PTM > 0.01:
-            if round(list_FDRs_PTM[-1], 2) <= 0.01:
-                print(f'rounded FDR value: {round(list_FDRs_PTM[-1], 2)}')
-                log_file.write(f'rounded FDR value: {round(list_FDRs_PTM[-1], 2)}\n')
+        fdr_threshold = i
+        thresholds_q_values_dict[i] = fdr_ptm
+        if fdr_ptm > 0.01:
+            if round(fdrs_ptm_list[-1], 2) <= 0.01:
+                print(f'rounded FDR value: {round(fdrs_ptm_list[-1], 2)}')
+                # log_file.write(f'rounded FDR value: {round(fdrs_ptm_list[-1], 2)}\n')
                 print('===============')
-                print(list_FDRs_PTM[-1], FDR_threshold)
-                log_file.write(f'===============\nFDR: {list_FDRs_PTM[-1]}, rank threshold: {FDR_threshold}\n\n')
-                return FDR_threshold, thresholds_q_values_dict
+                print(fdrs_ptm_list[-1], fdr_threshold)
+                # log_file.write(f'===============\nFDR: {fdrs_ptm_list[-1]}, rank threshold: {fdr_threshold}\n\n')
+                return fdr_threshold, thresholds_q_values_dict
             print('BAD')
-            print(list_FDRs_PTM[-1], FDR_threshold)
-            log_file.write(f'BAD\n{list_FDRs_PTM[-1]}, {FDR_threshold}\n\n')
-            break
+            print(fdrs_ptm_list[-1], fdr_threshold)
+            return fdr_threshold, thresholds_q_values_dict
 
-        if FDR_PTM <= 0.01 and FDR_PTM >= 0.0095:# 0.0089 | 0.005
+            # log_file.write(f'BAD\n{fdrs_ptm_list[-1]}, {fdr_threshold}\n\n')
+            # break
+
+        if fdr_ptm <= 0.01 and fdr_ptm >= 0.0095:  # 0.0089 | 0.005
             print('===============')
-            print(FDR_PTM, FDR_threshold)
-            log_file.write(f'===============\nFDR: {FDR_PTM}, rank threshold: {FDR_threshold}\n\n')
-            return FDR_threshold, thresholds_q_values_dict
+            print(fdr_ptm, fdr_threshold)
+            # log_file.write(f'===============\nFDR: {fdr_ptm}, rank threshold: {fdr_threshold}\n\n')
+            return fdr_threshold, thresholds_q_values_dict
