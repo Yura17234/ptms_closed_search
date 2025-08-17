@@ -25,6 +25,7 @@ setup(
         "unipressed>=0.3.1",
         "identipy @ git+https://github.com/levitsky/identipy.git#egg=identipy",
         "setuptools>=65.0.0",
+        "scikit-learn>=1.0",
     ],
     entry_points={
         'console_scripts': [
