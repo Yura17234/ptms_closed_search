@@ -183,7 +183,7 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
 
     plt.axvline(x=first_ref_threshold, color='red', linestyle="--")
     if rank_before_err != 0:
-        plt.axvline(rank_before_err, color="green", linestyle="-")
+        plt.axvline(rank_before_err, color="green", linestyle="--")
     # plt.axvline(threshold1, color="#FF7B00", linestyle="-")
     # plt.axvline(gaus_threshold, color="#0044FF", linestyle="-")
     plt.xlabel('Threshold rank')
@@ -193,7 +193,7 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
     plt.subplot(2, 2, 4).set_title('Error propagation')
     plt.scatter(thresholds, error_propagation, color='#33cc33', s=40, alpha=0.4, edgecolors="#404040")
     if rank_before_err != 0:
-        plt.axvline(rank_before_err, color="green", linestyle="-")
+        plt.axvline(rank_before_err, color="green", linestyle="--")
     # plt.axvline(threshold1, color="#FF7B00", linestyle="-")
     # plt.axvline(gaus_threshold, color="#0044FF", linestyle="-")
     plt.xlabel("Threshold rank")
