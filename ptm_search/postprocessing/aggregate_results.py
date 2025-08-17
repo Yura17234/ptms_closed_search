@@ -78,15 +78,15 @@ def aggregate_results(config):
 
         all_fdr_ptm_psms = pd.DataFrame()
         raw_result_dir = config.ptm_search_dir / f'{config.analysis_index}_result_{config.search_mode}'
-        for ptm_file_path in raw_result_dir.glob('*_result.csv'):
+        for index, ptm_file_path in enumerate(raw_result_dir.glob('*_result.csv')):
             ptm_name = ptm_file_path.stem.split(config.analysis_index)[0][:-1].replace('_', ' ')
+            print(f'{index} / {len(list(raw_result_dir.iterdir()))} | {ptm_name}')
             if not ptm_file_path.exists():
                 continue
 
             ptm_df = pd.read_csv(ptm_file_path)
             ptm_df['Search'] = ptm_name
             ptm_df = ptm_df.query("modifications != '[]'")
-            # ptm_df['log_hyperscore'] = np.log(ptm_df['hyperscore']) # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             ptm_df['variable'] = mark_variable_modifications(ptm_df['modifications'])
             ptm_df = ptm_df.query("variable == '+'")
             ptm_df['decoy'] = mark_decoys_and_targets(ptm_df['protein'])
