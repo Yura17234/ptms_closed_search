@@ -70,7 +70,6 @@ def aggregate_results(config):
 
         ss_psms = pd.read_csv(config.st_search_dir / 'union_PSMs_full.tsv', sep='\t')
         ss_psms['Search'] = 'Standard search'
-        ss_psms['log_hyperscore'] = np.log(ss_psms['hyperscore']) # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         ss_psms = ss_psms.query("modifications == '[]'")
         ss_psms['PTM'] = '-'
         ss_psms['variable'] = '-'
@@ -87,7 +86,7 @@ def aggregate_results(config):
             ptm_df = pd.read_csv(ptm_file_path)
             ptm_df['Search'] = ptm_name
             ptm_df = ptm_df.query("modifications != '[]'")
-            ptm_df['log_hyperscore'] = np.log(ptm_df['hyperscore']) # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            # ptm_df['log_hyperscore'] = np.log(ptm_df['hyperscore']) # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             ptm_df['variable'] = mark_variable_modifications(ptm_df['modifications'])
             ptm_df = ptm_df.query("variable == '+'")
             ptm_df['decoy'] = mark_decoys_and_targets(ptm_df['protein'])
@@ -104,16 +103,9 @@ def aggregate_results(config):
             except:
                 continue
 
-            if config.fdr_strategy == 'transferred_fdr':
-                ptm_df = full_df.query(f"PTM == '+' & rank >= {threshold}")
-            else:
-                ptm_df = ptm_df.sort_values("log_hyperscore") # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-                ptm_df['rank'] = range(1, len(ptm_df) + 1) # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-                ptm_df = ptm_df.query(f"rank >= {threshold}") # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
+            ptm_df = full_df.query(f"PTM == '+' & rank >= {threshold}")
             for rank_val, q_val in sorted(q_values.items()):
                 ptm_df.loc[ptm_df['rank'] > rank_val, 'q_value'] = q_val
-
             print(f'Размер результата анализа после фильтрации по {ptm_name} : {ptm_df.shape}')
             log_file.write(f'Размер результата анализа после фильтрации по {ptm_name} : {ptm_df.shape}\n')
 
@@ -122,7 +114,6 @@ def aggregate_results(config):
             if config.search_mode == 'fast_search':
                 valid_accs = ptm_uniprot_info_df.query(f'PTM == "{ptm_name}"')['accession'].tolist()
                 ptm_df = clear_ptm_psms(ptm_df, valid_accs)
-
                 print(f'Размер результата анализа после фильтрации на наличие информации в UniProt по {ptm_name} : {ptm_df.shape}')
                 log_file.write(f'Размер результата анализа после фильтрации на наличие информации в UniProt по {ptm_name} : {ptm_df.shape}\n\n')
 
