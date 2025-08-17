@@ -216,8 +216,9 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
             fdrs_ptm_list.append(fdr_ptm)
         except:
             print('BAD')
-            # print(fdrs_ptm_list[-1], fdr_threshold)
-            return fdr_threshold, thresholds_q_values_dict
+            print(fdrs_ptm_list[-1], fdr_threshold)
+            # return fdr_threshold, thresholds_q_values_dict
+            return
 
         # print(FDR_PTM, FDR_threshold)
         fdr_threshold = i
@@ -232,7 +233,8 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
                 return fdr_threshold, thresholds_q_values_dict
             print('BAD')
             print(fdrs_ptm_list[-1], fdr_threshold)
-            return fdr_threshold, thresholds_q_values_dict
+            # return fdr_threshold, thresholds_q_values_dict
+            return
 
             # log_file.write(f'BAD\n{fdrs_ptm_list[-1]}, {fdr_threshold}\n\n')
             # break

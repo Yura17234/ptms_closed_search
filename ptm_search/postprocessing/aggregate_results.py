@@ -98,10 +98,11 @@ def aggregate_results(config):
             target = full_df.query("decoy == False")# & PTM == '+'")
             decoy = full_df.query("decoy == True")# & PTM == '+'")
 
-            # try:
-            threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
-            # except:
-            #     continue
+            try:
+                threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
+            except:
+                print(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
+                continue
 
             ptm_df = full_df.query(f"PTM == '+' & rank >= {threshold}")
             for rank_val, q_val in sorted(q_values.items()):
