@@ -37,12 +37,12 @@ def make_fasta_file(proteins_from_msms_with_ptms_, ptm_groups_, fasta_file_, con
     proteom_accessions_ = list(set(proteom_accessions_))
     print(f'Количество белков в изначальной базе поиска fasta-файла: {len(proteom_accessions_)}\nКоличество белков, которые будут проверяться на модификации: {len(proteins_from_msms_with_ptms_)}')
 
-    # Загрузка 3000 последовательностей (target'ов)
+    # Загрузка 5000 последовательностей (target'ов)
     Additional_proteins_for_search = []
-    # Дополнительные 3000 белков не должны быть белками для PTM проверки
+    # Дополнительные 5000 белков не должны быть белками для PTM проверки
     proteom_accessions_ = [p for p in proteom_accessions_ if p not in proteins_from_msms_with_ptms_]
 
-    for accession in sample(list(set(proteom_accessions_)), 3000):
+    for accession in sample(list(set(proteom_accessions_)), 5000):
         try:
             Additional_proteins_for_search.append(protein_fastas_dict[accession])
         except KeyError:
@@ -69,9 +69,10 @@ def make_fasta_file(proteins_from_msms_with_ptms_, ptm_groups_, fasta_file_, con
                 except:
                     continue
 
-        with open(fasta_for_fast_search_dir / f'{modif2}_{config.analysis_index}.fasta', 'a') as handle3: # _reverse
-            # Добавление 3000 последовательностей (target'ов)
-            handle3.write(Additional_proteins_for_search_text)
+        if len(ptm_groups_[modif].keys()) < 5000:
+            with open(fasta_for_fast_search_dir / f'{modif2}_{config.analysis_index}.fasta', 'a') as handle3: # _reverse
+                # Добавление 5000 последовательностей (target'ов)
+                handle3.write(Additional_proteins_for_search_text)
 
         # Добавление в малые базы поиска decoy-последовательности
         pyteomics.fasta.write_decoy_db(source=str(fasta_for_fast_search_dir / f'{modif2}_{config.analysis_index}.fasta'),
