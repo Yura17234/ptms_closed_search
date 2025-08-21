@@ -13,6 +13,8 @@
 - Aggregating and filtering PTM search results.
 - Visualizing results via plots and summary tables.
 
+![Block_schem_ENG_colored_labeled.png](..%2F..%2F..%2F..%2FOneDrive%2FDocuments%2F%3F%3F%3F%3F%2F%3F%3F%3F%3F%3F%3F_%3F%3F%3F_%3F%3F%3F%3F%3F%3F%3F%3F_PTM%2FBlock_schem_ENG_colored_labeled.png)
+
 ---
 ## Installation
 
