@@ -27,7 +27,7 @@ def threshold_calculation_identipy(df_decoy, df_target, log_file):
     df_decoy = sum_df.query('decoy == True')
     df_target = sum_df.query('decoy == False')
 
-    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_tecoy['rank'].max()), 100000, dtype=int)[::-1]):
+    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 100000, dtype=int)[::-1]):
         x = df_decoy.query(f'rank >= {i}').shape[0]
         y = df_target.query(f'rank >= {i}').shape[0]
         if y == 0:
