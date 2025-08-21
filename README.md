@@ -1,6 +1,6 @@
 # ptms_closed_search
 
-**ptms_closed_search** is a module for running a complete post-translational modification (PTM) analysis of proteins based on mass spectrometry results, using IdentiPy and info about proteins from UniProt and dbPTM databases.
+**ptms_closed_search** is a module for running a complete post-translational modification (PTM) analysis of proteins based on mass spectrometry results, using IdentiPy and info about human proteins from UniProt and dbPTM databases.
 
 ---
 
