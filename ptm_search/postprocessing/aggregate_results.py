@@ -48,8 +48,8 @@ def calculate_threshold(decoys, targets, log_file, config, ptm_name, log_dir):
             ptm_name)
     else:
         return threshold_calculation_identipy(
-            decoys[['PTM', 'log_hyperscore']].query("PTM == '+'"),
-            targets[['PTM', 'log_hyperscore']].query("PTM == '+'"),
+            decoys[['PTM', 'hyperscore']].query("PTM == '+'"),
+            targets[['PTM', 'hyperscore']].query("PTM == '+'"),
             log_file)
 
 def aggregate_results(config):
@@ -95,8 +95,8 @@ def aggregate_results(config):
             full_df = pd.concat([ss_psms, ptm_df], ignore_index=True).sort_values("hyperscore")
             full_df['rank'] = range(1, len(full_df) + 1)
 
-            target = full_df.query("decoy == False")# & PTM == '+'")
-            decoy = full_df.query("decoy == True")# & PTM == '+'")
+            target = full_df.query("decoy == False")
+            decoy = full_df.query("decoy == True")
 
             try:
                 threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
