@@ -48,8 +48,8 @@ def calculate_threshold(decoys, targets, log_file, config, ptm_name, log_dir):
             ptm_name)
     else:
         return threshold_calculation_identipy(
-            decoys[['decoy', 'PTM', 'hyperscore']].query("PTM == '+'"),
-            targets[['decoy', 'PTM', 'hyperscore']].query("PTM == '+'"),
+            decoys[['PTM', 'rank']],#.query("PTM == '+'"),
+            targets[['PTM', 'rank']],#.query("PTM == '+'"),
             log_file)
 
 def aggregate_results(config):
@@ -92,11 +92,16 @@ def aggregate_results(config):
             ptm_df['decoy'] = mark_decoys_and_targets(ptm_df['protein'])
             ptm_df['PTM'] = '+'
 
-            full_df = pd.concat([ss_psms, ptm_df], ignore_index=True).sort_values("hyperscore")
-            full_df['rank'] = range(1, len(full_df) + 1)
-
-            target = full_df.query("decoy == False")
-            decoy = full_df.query("decoy == True")
+            if config.fdr_strategy == 'transferred_fdr':
+                full_df = pd.concat([ss_psms, ptm_df], ignore_index=True).sort_values('hyperscore')
+                full_df['rank'] = range(1, len(full_df) + 1)
+                target = full_df.query('decoy == False')
+                decoy = full_df.query('decoy == True')
+            else:
+                ptm_df = ptm_df.sort_values('hyperscore')
+                ptm_df['rank'] = range(1, len(ptm_df) + 1)
+                target = ptm_df.query('decoy == False')
+                decoy = ptm_df.query('decoy == True')
 
             try:
                 threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
@@ -104,7 +109,11 @@ def aggregate_results(config):
                 print(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
                 continue
 
-            ptm_df = full_df.query(f"PTM == '+' & rank >= {threshold}")
+            if config.fdr_strategy == 'transferred_fdr':
+                ptm_df = full_df.query(f'PTM == "+" & rank >= {threshold}')
+            else:
+                ptm_df = ptm_df.query(f'rank >= {threshold}')
+
             for rank_val, q_val in sorted(q_values.items()):
                 ptm_df.loc[ptm_df['rank'] > rank_val, 'q_value'] = q_val
             print(f'Размер результата анализа после фильтрации по {ptm_name} : {ptm_df.shape}')
@@ -127,7 +136,7 @@ def aggregate_results(config):
     else:
         all_fdr_ptm_psms = pd.read_csv(fdr_result_file_path)
 
-    fdr_analysis_dir = config.ptm_search_dir / f"Result_of_PTM_analysis_{config.search_mode}_{config.fdr_strategy}"
+    fdr_analysis_dir = config.ptm_search_dir / f'Result_of_PTM_analysis_{config.search_mode}_{config.fdr_strategy}'
     fdr_analysis_dir.mkdir(exist_ok=True)
 
     ss_peptides = pd.read_csv(config.st_search_dir / 'union_peptides.tsv', sep='\t')

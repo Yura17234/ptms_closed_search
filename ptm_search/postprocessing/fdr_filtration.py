@@ -21,11 +21,11 @@ def threshold_calculation_identipy(df_decoy, df_target, log_file):
 
     # df_Decoy['decoy'] = True
     # df_Target['decoy'] = False
-    sum_df = pd.concat([df_decoy, df_target], ignore_index=True)
-    sum_df = sum_df.sort_values(by=["hyperscore"])
-    sum_df['rank'] = range(1, len(sum_df) + 1)
-    df_decoy = sum_df.query('decoy == True')
-    df_target = sum_df.query('decoy == False')
+    # sum_df = pd.concat([df_decoy, df_target], ignore_index=True)
+    # sum_df = sum_df.sort_values(by=["hyperscore"])
+    # sum_df['rank'] = range(1, len(sum_df) + 1)
+    # df_decoy = sum_df.query('decoy == True')
+    # df_target = sum_df.query('decoy == False')
 
     for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 100000, dtype=int)[::-1]):
         x = df_decoy.query(f'rank >= {i}').shape[0]
