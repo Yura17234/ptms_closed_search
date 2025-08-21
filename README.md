@@ -1,6 +1,6 @@
-# PTM Pipeline
+# ptms_closed_search
 
-**PTM Pipeline** is a module for running a complete post-translational modification (PTM) analysis of proteins based on mass spectrometry results, using IdentiPy and UniProt / dbPTM databases.
+**ptms_closed_search** is a module for running a complete post-translational modification (PTM) analysis of proteins based on mass spectrometry results, using IdentiPy and UniProt / dbPTM databases.
 
 ---
 
@@ -17,7 +17,7 @@
 ## Installation
 
 ```bash
-pip install git+https://github.com/Yura17234/ptm_searching.git
+pip install git+https://github.com/Yura17234/ptms_closed_search.git
 ```
 
 ---
