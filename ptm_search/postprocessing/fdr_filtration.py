@@ -15,21 +15,21 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 
-def threshold_calculation_identipy(df_Decoy, df_Target, log_file):
+def threshold_calculation_identipy(df_decoy, df_target, log_file):
     FDR_list = []
     thresholds_q_values_dict = {}
 
     # df_Decoy['decoy'] = True
     # df_Target['decoy'] = False
-    sum_df = pd.concat([df_Decoy, df_Target], ignore_index=True)
+    sum_df = pd.concat([df_decoy, df_target], ignore_index=True)
     sum_df = sum_df.sort_values(by=["hyperscore"])
     sum_df['rank'] = range(1, len(sum_df) + 1)
-    df_Decoy = sum_df.query('decoy == True')
-    df_Target = sum_df.query('decoy == False')
+    df_decoy = sum_df.query('decoy == True')
+    df_target = sum_df.query('decoy == False')
 
-    for i in tqdm(np.linspace(int(df_Decoy['rank'].min()), int(df_Decoy['rank'].max()), 100000, dtype=int)[::-1]):
-        x = df_Decoy.query(f'rank >= {i}').shape[0]
-        y = df_Target.query(f'rank >= {i}').shape[0]
+    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_tecoy['rank'].max()), 100000, dtype=int)[::-1]):
+        x = df_decoy.query(f'rank >= {i}').shape[0]
+        y = df_target.query(f'rank >= {i}').shape[0]
         if y == 0:
             print('BAD')
             print(f'FDR: {FDR_list[-1]}, rank threshold: {i}')
