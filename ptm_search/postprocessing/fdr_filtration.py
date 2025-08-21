@@ -16,46 +16,38 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 
 def threshold_calculation_identipy(df_decoy, df_target, log_file):
-    FDR_list = []
+    fdr_list = []
     thresholds_q_values_dict = {}
-
-    # df_Decoy['decoy'] = True
-    # df_Target['decoy'] = False
-    # sum_df = pd.concat([df_decoy, df_target], ignore_index=True)
-    # sum_df = sum_df.sort_values(by=["hyperscore"])
-    # sum_df['rank'] = range(1, len(sum_df) + 1)
-    # df_decoy = sum_df.query('decoy == True')
-    # df_target = sum_df.query('decoy == False')
 
     for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 100000, dtype=int)[::-1]):
         x = df_decoy.query(f'rank >= {i}').shape[0]
         y = df_target.query(f'rank >= {i}').shape[0]
         if y == 0:
             print('BAD')
-            print(f'FDR: {FDR_list[-1]}, rank threshold: {i}')
+            print(f'FDR: {fdr_list[-1]}, rank threshold: {i}')
             break
         fdr = x / y
-        FDR_list.append(fdr)
-        FDR_threshold = i
+        fdr_list.append(fdr)
+        fdr_threshold = i
         thresholds_q_values_dict[i] = fdr
         if fdr > 0.01:
-            if round(FDR_list[-1], 2) <= 0.01:
-                print(f'rounded FDR value: {round(FDR_list[-1], 2)}')
-                log_file.write(f'rounded FDR value: {round(FDR_list[-1], 2)}\n')
+            if round(fdr_list[-1], 2) <= 0.01:
+                print(f'rounded FDR value: {round(fdr_list[-1], 2)}')
+                log_file.write(f'rounded FDR value: {round(fdr_list[-1], 2)}\n')
                 print('===============')
-                print(FDR_list[-1], FDR_threshold)
-                log_file.write(f'===============\nFDR: {FDR_list[-1]}, rank threshold: {FDR_threshold}\n\n')
-                return FDR_threshold, thresholds_q_values_dict
+                print(fdr_list[-1], fdr_threshold)
+                log_file.write(f'===============\nFDR: {fdr_list[-1]}, rank threshold: {fdr_threshold}\n\n')
+                return fdr_threshold, thresholds_q_values_dict
             print('BAD')
-            print(FDR_list[-1], FDR_threshold)
-            log_file.write(f'BAD\n{FDR_list[-1]}, {FDR_threshold}\n\n')
+            print(fdr_list[-1], fdr_threshold)
+            log_file.write(f'BAD\n{fdr_list[-1]}, {fdr_threshold}\n\n')
             break
 
         if fdr <= 0.01 and fdr >= 0.0095:
             print('===============')
             print(f'FDR: {fdr}, rank threshold: {i}')
             log_file.write(f'\n===============\nFDR: {fdr}, rank threshold: {i}')
-            return FDR_threshold, thresholds_q_values_dict
+            return fdr_threshold, thresholds_q_values_dict
 
 def adaptive_spline_number_knots(n_points, max_points=1000, max_knots=12, min_knots=3):
     knots = round(n_points * max_knots / max_points)
