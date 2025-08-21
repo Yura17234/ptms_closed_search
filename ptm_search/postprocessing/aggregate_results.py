@@ -48,8 +48,8 @@ def calculate_threshold(decoys, targets, log_file, config, ptm_name, log_dir):
             ptm_name)
     else:
         return threshold_calculation_identipy(
-            decoys[['PTM', 'hyperscore']].query("PTM == '+'"),
-            targets[['PTM', 'hyperscore']].query("PTM == '+'"),
+            decoys[['decoy', 'PTM', 'hyperscore']].query("PTM == '+'"),
+            targets[['decoy', 'PTM', 'hyperscore']].query("PTM == '+'"),
             log_file)
 
 def aggregate_results(config):

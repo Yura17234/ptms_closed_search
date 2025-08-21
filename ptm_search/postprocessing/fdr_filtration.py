@@ -19,24 +19,26 @@ def threshold_calculation_identipy(df_Decoy, df_Target, log_file):
     FDR_list = []
     thresholds_q_values_dict = {}
 
-    df_Decoy['decoy'] = [True] * df_Decoy.shape[0]
-    df_Target['decoy'] = [False] * df_Target.shape[0]
+    # df_Decoy['decoy'] = True
+    # df_Target['decoy'] = False
     sum_df = pd.concat([df_Decoy, df_Target], ignore_index=True)
-    sum_df = sum_df.sort_values(by=["hyperscore"], ascending=True)
+    sum_df = sum_df.sort_values(by=["hyperscore"])
     sum_df['rank'] = range(1, len(sum_df) + 1)
     df_Decoy = sum_df.query('decoy == True')
     df_Target = sum_df.query('decoy == False')
 
     for i in tqdm(np.linspace(int(df_Decoy['rank'].min()), int(df_Decoy['rank'].max()), 100000, dtype=int)[::-1]):
-        if df_Target.query(f'rank >= {i}').shape[0] == 0:
+        x = df_Decoy.query(f'rank >= {i}').shape[0]
+        y = df_Target.query(f'rank >= {i}').shape[0]
+        if y == 0:
             print('BAD')
             print(f'FDR: {FDR_list[-1]}, rank threshold: {i}')
             break
-        FDR = df_Decoy.query(f'rank >= {i}').shape[0] / ( df_Target.query(f'rank >= {i}').shape[0] )
-        FDR_list.append(FDR)
+        fdr = x / y
+        FDR_list.append(fdr)
         FDR_threshold = i
-        thresholds_q_values_dict[i] = FDR
-        if FDR > 0.01:
+        thresholds_q_values_dict[i] = fdr
+        if fdr > 0.01:
             if round(FDR_list[-1], 2) <= 0.01:
                 print(f'rounded FDR value: {round(FDR_list[-1], 2)}')
                 log_file.write(f'rounded FDR value: {round(FDR_list[-1], 2)}\n')
@@ -49,10 +51,10 @@ def threshold_calculation_identipy(df_Decoy, df_Target, log_file):
             log_file.write(f'BAD\n{FDR_list[-1]}, {FDR_threshold}\n\n')
             break
 
-        if FDR <= 0.01 and FDR >= 0.0095:
+        if fdr <= 0.01 and fdr >= 0.0095:
             print('===============')
-            print(f'FDR: {FDR}, rank threshold: {i}')
-            log_file.write(f'\n===============\nFDR: {FDR}, rank threshold: {i}')
+            print(f'FDR: {fdr}, rank threshold: {i}')
+            log_file.write(f'\n===============\nFDR: {fdr}, rank threshold: {i}')
             return FDR_threshold, thresholds_q_values_dict
 
 def adaptive_spline_number_knots(n_points, max_points=1000, max_knots=12, min_knots=3):
