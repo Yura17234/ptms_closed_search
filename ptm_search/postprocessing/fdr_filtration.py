@@ -27,50 +27,50 @@ def threshold_calculation_identipy(df_decoy, df_target, log_file):
             break
         fdr = x / y
 
-        # if fdr > 0.01:
-        #     try:
-        #         t = (0.01 - fdr_list[-1]) / (fdr - fdr_list[-1])
-        #         fdr_threshold = fdr_threshold + t * (i - fdr_threshold)
-        #
-        #         thresholds_q_values_dict[fdr_threshold] = fdr_list[-1]
-        #         # print('===============')
-        #         # print(fdrs_ptm_list[-1], fdr_threshold)
-        #         print(f'===============\nFDR: {fdr_list[-1]}, rank threshold: {fdr_threshold}\n\n')
-        #         return fdr_threshold, thresholds_q_values_dict
-        #     except:
-        #         if round(fdr, 2) <= 0.01:
-        #             # print(f'rounded FDR value: {round(fdr_ptm, 2)}')
-        #             # print('===============')
-        #             print(fdr, i)
-        #             thresholds_q_values_dict[i] = fdr
-        #             print(f'===============\nFDR: {fdr}, rank threshold: {i}\n\n')
-        #             return fdr_threshold, thresholds_q_values_dict
-        #         print('BAD')
-        #         print(fdr, fdr_threshold)
-        #         return
+        if fdr > 0.01:
+            try:
+                t = (0.01 - fdr_list[-1]) / (fdr - fdr_list[-1])
+                fdr_threshold = fdr_threshold + t * (i - fdr_threshold)
+
+                thresholds_q_values_dict[fdr_threshold] = fdr_list[-1]
+                # print('===============')
+                # print(fdrs_ptm_list[-1], fdr_threshold)
+                print(f'===============\nFDR: {fdr_list[-1]}, rank threshold: {fdr_threshold}\n\n')
+                return fdr_threshold, thresholds_q_values_dict
+            except:
+                if round(fdr, 2) <= 0.01:
+                    # print(f'rounded FDR value: {round(fdr_ptm, 2)}')
+                    # print('===============')
+                    print(fdr, i)
+                    thresholds_q_values_dict[i] = fdr
+                    print(f'===============\nFDR: {fdr}, rank threshold: {i}\n\n')
+                    return i, thresholds_q_values_dict
+                print('BAD')
+                print(fdr, fdr_threshold)
+                return
 
         fdr_threshold = i
         thresholds_q_values_dict[i] = fdr
         fdr_list.append(fdr)
 
-        if fdr > 0.01:
-            if round(fdr_list[-1], 2) <= 0.01:
-                print(f'rounded FDR value: {round(fdr_list[-1], 2)}')
-                log_file.write(f'rounded FDR value: {round(fdr_list[-1], 2)}\n')
-                print('===============')
-                print(fdr_list[-1], fdr_threshold)
-                log_file.write(f'===============\nFDR: {fdr_list[-1]}, rank threshold: {fdr_threshold}\n\n')
-                return fdr_threshold, thresholds_q_values_dict
-            print('BAD')
-            print(fdr_list[-1], fdr_threshold)
-            log_file.write(f'BAD\n{fdr_list[-1]}, {fdr_threshold}\n\n')
-            break
-
-        if fdr <= 0.01 and fdr >= 0.0095:
-            print('===============')
-            print(f'FDR: {fdr}, rank threshold: {i}')
-            log_file.write(f'\n===============\nFDR: {fdr}, rank threshold: {i}')
-            return fdr_threshold, thresholds_q_values_dict
+        # if fdr > 0.01:
+        #     if round(fdr_list[-1], 2) <= 0.01:
+        #         print(f'rounded FDR value: {round(fdr_list[-1], 2)}')
+        #         log_file.write(f'rounded FDR value: {round(fdr_list[-1], 2)}\n')
+        #         print('===============')
+        #         print(fdr_list[-1], fdr_threshold)
+        #         log_file.write(f'===============\nFDR: {fdr_list[-1]}, rank threshold: {fdr_threshold}\n\n')
+        #         return fdr_threshold, thresholds_q_values_dict
+        #     print('BAD')
+        #     print(fdr_list[-1], fdr_threshold)
+        #     log_file.write(f'BAD\n{fdr_list[-1]}, {fdr_threshold}\n\n')
+        #     break
+        #
+        # if fdr <= 0.01 and fdr >= 0.0095:
+        #     print('===============')
+        #     print(f'FDR: {fdr}, rank threshold: {i}')
+        #     log_file.write(f'\n===============\nFDR: {fdr}, rank threshold: {i}')
+        #     return fdr_threshold, thresholds_q_values_dict
 
 def adaptive_spline_number_knots(n_points, max_points=1000, max_knots=12, min_knots=3):
     knots = round(n_points * max_knots / max_points)
@@ -235,51 +235,51 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
             print(fdrs_ptm_list[-1], fdr_threshold)
             return
 
-        # if fdr_ptm > 0.01:
-        #     try:
-        #         t = (0.01 - fdrs_ptm_list[-1]) / (fdr_ptm - fdrs_ptm_list[-1])
-        #         fdr_threshold = fdr_threshold + t * (i - fdr_threshold)
-        #
-        #         thresholds_q_values_dict[fdr_threshold] = fdrs_ptm_list[-1]
-        #         # print('===============')
-        #         # print(fdrs_ptm_list[-1], fdr_threshold)
-        #         print(f'===============\nFDR: {fdrs_ptm_list[-1]}, rank threshold: {fdr_threshold}\n\n')
-        #         return fdr_threshold, thresholds_q_values_dict
-        #     except:
-        #         if round(fdr_ptm, 2) <= 0.01:
-        #             # print(f'rounded FDR value: {round(fdr_ptm, 2)}')
-        #             # print('===============')
-        #             print(fdr_ptm, i)
-        #             thresholds_q_values_dict[i] = fdr_ptm
-        #             print(f'===============\nFDR: {fdr_ptm}, rank threshold: {i}\n\n')
-        #             return fdr_threshold, thresholds_q_values_dict
-        #         print('BAD')
-        #         print(fdr_ptm, fdr_threshold)
-        #         return
+        if fdr_ptm > 0.01:
+            try:
+                t = (0.01 - fdrs_ptm_list[-1]) / (fdr_ptm - fdrs_ptm_list[-1])
+                fdr_threshold = fdr_threshold + t * (i - fdr_threshold)
+
+                thresholds_q_values_dict[fdr_threshold] = fdrs_ptm_list[-1]
+                # print('===============')
+                # print(fdrs_ptm_list[-1], fdr_threshold)
+                print(f'===============\nFDR: {fdrs_ptm_list[-1]}, rank threshold: {fdr_threshold}\n\n')
+                return fdr_threshold, thresholds_q_values_dict
+            except:
+                if round(fdr_ptm, 2) <= 0.01:
+                    # print(f'rounded FDR value: {round(fdr_ptm, 2)}')
+                    # print('===============')
+                    print(fdr_ptm, i)
+                    thresholds_q_values_dict[i] = fdr_ptm
+                    print(f'===============\nFDR: {fdr_ptm}, rank threshold: {i}\n\n')
+                    return i, thresholds_q_values_dict
+                print('BAD')
+                print(fdr_ptm, fdr_threshold)
+                return
 
         fdr_threshold = i
         thresholds_q_values_dict[i] = fdr_ptm
         fdrs_ptm_list.append(fdr_ptm)
 
 
-        if fdr_ptm > 0.01:
-            if round(fdrs_ptm_list[-1], 2) <= 0.01:
-                print(f'rounded FDR value: {round(fdrs_ptm_list[-1], 2)}')
-                # log_file.write(f'rounded FDR value: {round(fdrs_ptm_list[-1], 2)}\n')
-                print('===============')
-                print(fdrs_ptm_list[-1], fdr_threshold)
-                # log_file.write(f'===============\nFDR: {fdrs_ptm_list[-1]}, rank threshold: {fdr_threshold}\n\n')
-                return fdr_threshold, thresholds_q_values_dict
-            print('BAD')
-            print(fdrs_ptm_list[-1], fdr_threshold)
-            # return fdr_threshold, thresholds_q_values_dict
-            return
-
-            # log_file.write(f'BAD\n{fdrs_ptm_list[-1]}, {fdr_threshold}\n\n')
-            # break
-
-        if fdr_ptm <= 0.01 and fdr_ptm >= 0.0095:  # 0.0089 | 0.005
-            print('===============')
-            print(fdr_ptm, fdr_threshold)
-            # log_file.write(f'===============\nFDR: {fdr_ptm}, rank threshold: {fdr_threshold}\n\n')
-            return fdr_threshold, thresholds_q_values_dict
+        # if fdr_ptm > 0.01:
+        #     if round(fdrs_ptm_list[-1], 2) <= 0.01:
+        #         print(f'rounded FDR value: {round(fdrs_ptm_list[-1], 2)}')
+        #         # log_file.write(f'rounded FDR value: {round(fdrs_ptm_list[-1], 2)}\n')
+        #         print('===============')
+        #         print(fdrs_ptm_list[-1], fdr_threshold)
+        #         # log_file.write(f'===============\nFDR: {fdrs_ptm_list[-1]}, rank threshold: {fdr_threshold}\n\n')
+        #         return fdr_threshold, thresholds_q_values_dict
+        #     print('BAD')
+        #     print(fdrs_ptm_list[-1], fdr_threshold)
+        #     # return fdr_threshold, thresholds_q_values_dict
+        #     return
+        #
+        #     # log_file.write(f'BAD\n{fdrs_ptm_list[-1]}, {fdr_threshold}\n\n')
+        #     # break
+        #
+        # if fdr_ptm <= 0.01 and fdr_ptm >= 0.0095:  # 0.0089 | 0.005
+        #     print('===============')
+        #     print(fdr_ptm, fdr_threshold)
+        #     # log_file.write(f'===============\nFDR: {fdr_ptm}, rank threshold: {fdr_threshold}\n\n')
+        #     return fdr_threshold, thresholds_q_values_dict
