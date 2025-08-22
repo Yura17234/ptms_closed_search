@@ -249,9 +249,15 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
                 if round(fdr_ptm, 2) <= 0.01:
                     # print(f'rounded FDR value: {round(fdr_ptm, 2)}')
                     # print('===============')
-                    print(fdr_ptm, i)
-                    thresholds_q_values_dict[i] = fdr_ptm
-                    print(f'===============\nFDR: {fdr_ptm}, rank threshold: {i}\n\n')
+                    step = thresholds[1] - thresholds[0]
+                    fake_prev_thr = i + step
+                    fake_prev_fdr = fdr_ptm
+                    t = (0.01 - fake_prev_fdr) / (fdr_ptm - fake_prev_fdr + 1e-12)
+                    fdr_threshold = fake_prev_thr + t * (i - fake_prev_thr)
+
+                    # print(fdr_ptm, fdr_threshold)
+                    thresholds_q_values_dict[fdr_threshold] = fdr_ptm
+                    print(f'===============\nFDR: {fdr_ptm}, rank threshold: {fdr_threshold}\n\n')
                     return fdr_threshold, thresholds_q_values_dict
                 print('BAD')
                 print(fdr_ptm, fdr_threshold)
