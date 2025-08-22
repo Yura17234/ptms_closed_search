@@ -18,7 +18,7 @@ from sklearn.metrics import mean_squared_error
 def threshold_calculation_identipy(df_decoy, df_target, log_file):
     fdr_threshold, fdr_list, thresholds_q_values_dict = 0, [], {}
 
-    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 10000, dtype=int)[::-1]):
+    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 1000, dtype=int)[::-1]):
         x = df_decoy.query(f'rank >= {i}').shape[0]
         y = df_target.query(f'rank >= {i}').shape[0]
         if y == 0:
@@ -223,7 +223,7 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
     # ------------------------------------------------------------------------------------------------------------------
     # Вычисление попрога FDR на уровне 1% для PTM идентификаций
     fdr_threshold, fdrs_ptm_list, thresholds_q_values_dict = 0, [], {}
-    for i in tqdm(np.linspace(df_decoy_ptm['rank'].min(), df_decoy_ptm['rank'].max(), 10000, dtype=int)[::-1]):
+    for i in tqdm(np.linspace(df_decoy_ptm['rank'].min(), df_decoy_ptm['rank'].max(), 1000, dtype=int)[::-1]):
         fdr = df_decoy_ss_and_ptm.query(f'rank >= {i}').shape[0] / df_target_ss_and_ptm.query(f'rank >= {i}').shape[0]
 
         try:
@@ -249,15 +249,9 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
                 if round(fdr_ptm, 2) <= 0.01:
                     # print(f'rounded FDR value: {round(fdr_ptm, 2)}')
                     # print('===============')
-                    step = thresholds[1] - thresholds[0]
-                    fake_prev_thr = i + step
-                    fake_prev_fdr = fdr_ptm
-                    t = (0.01 - fake_prev_fdr) / (fdr_ptm - fake_prev_fdr + 1e-12)
-                    fdr_threshold = fake_prev_thr + t * (i - fake_prev_thr)
-
-                    # print(fdr_ptm, fdr_threshold)
-                    thresholds_q_values_dict[fdr_threshold] = fdr_ptm
-                    print(f'===============\nFDR: {fdr_ptm}, rank threshold: {fdr_threshold}\n\n')
+                    print(fdr_ptm, i)
+                    thresholds_q_values_dict[i] = fdr_ptm
+                    print(f'===============\nFDR: {fdr_ptm}, rank threshold: {i}\n\n')
                     return fdr_threshold, thresholds_q_values_dict
                 print('BAD')
                 print(fdr_ptm, fdr_threshold)
