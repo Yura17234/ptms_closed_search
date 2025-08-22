@@ -217,6 +217,8 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
             fdr_threshold = fdr_threshold + t * (i - fdr_threshold)
 
             thresholds_q_values_dict[i] = fdrs_ptm_list[-1]
+            print('===============')
+            print(fdrs_ptm_list[-1], fdr_threshold)
             return fdr_threshold, thresholds_q_values_dict
 
         fdr_threshold = i
