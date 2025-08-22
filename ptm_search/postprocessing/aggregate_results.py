@@ -103,11 +103,11 @@ def aggregate_results(config):
                 target = ptm_df.query('decoy == False')
                 decoy = ptm_df.query('decoy == True')
 
-            try:
-                threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
-            except:
-                print(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
-                continue
+            # try:
+            threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
+            # except:
+            #     print(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
+            #     continue
 
             if config.fdr_strategy == 'transferred_fdr':
                 ptm_df = full_df.query(f'PTM == "+" & rank >= {threshold}')
