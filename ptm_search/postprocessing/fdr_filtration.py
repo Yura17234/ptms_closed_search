@@ -19,7 +19,7 @@ def threshold_calculation_identipy(df_decoy, df_target, log_file):
     fdr_list = []
     thresholds_q_values_dict = {}
 
-    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 100000, dtype=int)[::-1]):
+    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 10000, dtype=int)[::-1]):
         x = df_decoy.query(f'rank >= {i}').shape[0]
         y = df_target.query(f'rank >= {i}').shape[0]
         if y == 0:
@@ -200,7 +200,7 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
     # ------------------------------------------------------------------------------------------------------------------
     # Вычисление попрога FDR на уровне 1% для PTM идентификаций
     fdr_threshold, fdrs_ptm_list, thresholds_q_values_dict = 0, [], {}
-    for i in tqdm(np.linspace(df_decoy_ptm['rank'].min(), df_decoy_ptm['rank'].max(), 100000, dtype=int)[::-1]):
+    for i in tqdm(np.linspace(df_decoy_ptm['rank'].min(), df_decoy_ptm['rank'].max(), 10000, dtype=int)[::-1]):
         fdr = df_decoy_ss_and_ptm.query(f'rank >= {i}').shape[0] / df_target_ss_and_ptm.query(f'rank >= {i}').shape[0]
 
         try:
