@@ -200,7 +200,7 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
     # ------------------------------------------------------------------------------------------------------------------
     # Вычисление попрога FDR на уровне 1% для PTM идентификаций
     fdr_threshold, fdrs_ptm_list, thresholds_q_values_dict = 0, [], {}
-    for i in tqdm(thresholds[::-1]):
+    for i in tqdm(np.linspace(df_decoy_ptm['rank'].min(), df_decoy_ptm['rank'].max(), 100000, dtype=int)[::-1]):
         fdr = df_decoy_ss_and_ptm.query(f'rank >= {i}').shape[0] / df_target_ss_and_ptm.query(f'rank >= {i}').shape[0]
 
         try:
