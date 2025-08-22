@@ -19,7 +19,7 @@ def threshold_calculation_identipy(df_decoy, df_target, log_file):
     fdr_list = []
     thresholds_q_values_dict = {}
 
-    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 1000, dtype=int)[::-1]):
+    for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 100000, dtype=int)[::-1]):
         x = df_decoy.query(f'rank >= {i}').shape[0]
         y = df_target.query(f'rank >= {i}').shape[0]
         if y == 0:
@@ -200,7 +200,7 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
     # ------------------------------------------------------------------------------------------------------------------
     # Вычисление попрога FDR на уровне 1% для PTM идентификаций
     fdr_threshold, fdrs_ptm_list, thresholds_q_values_dict = 0, [], {}
-    for i in tqdm(thresholds[::-1]):
+    for i in tqdm(np.linspace(df_decoy_ptm['rank'].min(), df_decoy_ptm['rank'].max(), 100000, dtype=int)[::-1]):
         fdr = df_decoy_ss_and_ptm.query(f'rank >= {i}').shape[0] / df_target_ss_and_ptm.query(f'rank >= {i}').shape[0]
 
         try:
@@ -213,13 +213,26 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm, df_target_ss_and
             return
 
         if fdr_ptm > 0.01:
-            t = (0.01 - fdrs_ptm_list[-1]) / (fdr_ptm - fdrs_ptm_list[-1])
-            fdr_threshold = fdr_threshold + t * (i - fdr_threshold)
+            try:
+                t = (0.01 - fdrs_ptm_list[-1]) / (fdr_ptm - fdrs_ptm_list[-1])
+                fdr_threshold = fdr_threshold + t * (i - fdr_threshold)
 
-            thresholds_q_values_dict[i] = fdrs_ptm_list[-1]
-            print('===============')
-            print(fdrs_ptm_list[-1], fdr_threshold)
-            return fdr_threshold, thresholds_q_values_dict
+                thresholds_q_values_dict[fdr_threshold] = fdrs_ptm_list[-1]
+                # print('===============')
+                # print(fdrs_ptm_list[-1], fdr_threshold)
+                print(f'===============\nFDR: {fdrs_ptm_list[-1]}, rank threshold: {fdr_threshold}\n\n')
+                return fdr_threshold, thresholds_q_values_dict
+            except:
+                if round(fdr_ptm, 2) <= 0.01:
+                    print(f'rounded FDR value: {round(fdr_ptm, 2)}')
+                    print('===============')
+                    print(fdr_ptm, i)
+                    thresholds_q_values_dict[i] = fdr_ptm
+                    print(f'===============\nFDR: {fdr_ptm}, rank threshold: {i}\n\n')
+                    return fdr_threshold, thresholds_q_values_dict
+                print('BAD')
+                print(fdr_ptm, fdr_threshold)
+                return
 
         fdr_threshold = i
         thresholds_q_values_dict[i] = fdr_ptm

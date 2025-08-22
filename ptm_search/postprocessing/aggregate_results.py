@@ -78,7 +78,7 @@ def aggregate_results(config):
 
         all_fdr_ptm_psms = pd.DataFrame()
         raw_result_dir = config.ptm_search_dir / f'{config.analysis_index}_result_{config.search_mode}'
-        for index, ptm_file_path in enumerate(raw_result_dir.glob('*_result.csv')):
+        for index, ptm_file_path in enumerate(raw_result_dir.glob('*_result.csv'), start=1):
             ptm_name = ptm_file_path.stem.split(config.analysis_index)[0][:-1].replace('_', ' ')
             print(f'{index} / {len(list(raw_result_dir.iterdir()))} | {ptm_name}')
             if not ptm_file_path.exists():
@@ -103,11 +103,11 @@ def aggregate_results(config):
                 target = ptm_df.query('decoy == False')
                 decoy = ptm_df.query('decoy == True')
 
-            # try:
-            threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
-            # except:
-            #     print(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
-            #     continue
+            try:
+                threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
+            except:
+                print(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
+                continue
 
             if config.fdr_strategy == 'transferred_fdr':
                 ptm_df = full_df.query(f'PTM == "+" & rank >= {threshold}')
