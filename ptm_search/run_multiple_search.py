@@ -1,5 +1,6 @@
 import argparse
 from ptm_search.config import Config
+from ptm_search.setup_logging import setup_logger
 from ptm_search.search.multiple_search import multiple_search
 
 def main():
@@ -8,5 +9,8 @@ def main():
     args = parser.parse_args()
 
     config = Config(args.config)
-    print('Run multiple search !')
+    logger = setup_logger(config.ptm_search_dir / 'logs', name="multiple_search")
+
+    logger.info('Run multiple_search !')
     multiple_search(config)
+    logger.info('multiple_search -- Done !')

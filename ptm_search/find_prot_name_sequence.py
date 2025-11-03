@@ -1,5 +1,5 @@
 '''
-    Получение названия, fasta-последовательности, последовательности
+    Get protein name and sequence
 '''
 import os
 import gzip
@@ -12,7 +12,7 @@ with open(module_dir / 'data' / 'protein_names_dict.json', 'r', encoding='utf-8'
     protein_names_dict_json = my_file0.read()
 protein_names_dict = json.loads(protein_names_dict_json)
 
-def get_protein_name(accession):
+def get_protein_name(accession: str) -> str:
     try:
         name = protein_names_dict[accession]
         return name
@@ -29,7 +29,7 @@ with gzip.open(module_dir / 'data' / 'protein_sequences_dict.json.gz', 'rt', enc
     protein_sequences_dict_json = my_file1.read()
 protein_sequences_dict = json.loads(protein_sequences_dict_json)
 
-def get_protein_sequence(accession1):
+def get_protein_sequence(accession1: str) -> str:
     try:
         name1 = protein_sequences_dict[accession1]
         return name1
