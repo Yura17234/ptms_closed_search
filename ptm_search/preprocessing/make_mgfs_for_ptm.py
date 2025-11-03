@@ -8,7 +8,7 @@ import pandas as pd
 import os
 from multiprocessing import Pool
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("prepare_ptm_search")
 
 # Информация обо всех и идентифицированных спектрах представляется как глобальные переменные
 def init_pool(union_PSMs_df0, mgf_dir0, config0):

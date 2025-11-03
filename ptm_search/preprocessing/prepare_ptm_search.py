@@ -5,7 +5,7 @@ import os
 import glob
 import shutil
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("prepare_ptm_search")
 
 from ptm_search.preprocessing.parsing_human_proteom import parsing_human_proteom
 from ptm_search.preprocessing.adding_ptm_info_from_db_ptm import adding_ptm_info_from_db_ptm

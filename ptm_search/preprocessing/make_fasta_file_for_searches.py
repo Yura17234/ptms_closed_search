@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import gzip
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("prepare_ptm_search")
 
 '''
     make_fasta_file_for_searches <-- make_fasta_file

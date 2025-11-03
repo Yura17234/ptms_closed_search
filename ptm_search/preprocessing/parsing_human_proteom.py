@@ -10,7 +10,7 @@ import random
 random.seed(42)
 from ptm_search.preprocessing.modification_name_correction import smaller_groups
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("prepare_ptm_search")
 
 '''
                     /--- smaller_groups

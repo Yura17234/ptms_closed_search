@@ -7,7 +7,7 @@ from tqdm import tqdm
 import random
 import os
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("prepare_ptm_search")
 
 '''
     make_ptms_df <-- make_df_of_PTMs

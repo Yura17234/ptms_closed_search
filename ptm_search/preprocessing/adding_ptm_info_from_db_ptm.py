@@ -3,7 +3,7 @@ import gzip
 from tqdm import tqdm
 from pathlib import Path
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("prepare_ptm_search")
 
 def adding_ptm_info_from_db_ptm(dict_of_grouped_by_ptms_proteins: dict[str, dict[str, list[str]]], proteins_from_msms: list[str]) -> dict[str, dict[str, list[str]]]:
     module_dir = Path(__file__).parent.parent.resolve()

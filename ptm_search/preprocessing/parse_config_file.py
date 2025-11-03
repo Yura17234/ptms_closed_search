@@ -9,7 +9,7 @@ import configparser
 from configupdater import ConfigUpdater
 import json
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("prepare_ptm_search")
 
 '''
     parse_config_file <-- make_config_files
