@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 
-def setup_logging(log_dir, name: str, level=logging.INFO) -> logging.Logger:
+def setup_logger(log_dir, name: str, level=logging.INFO) -> logging.Logger:
     os.makedirs(log_dir, exist_ok=True)
 
     logger = logging.getLogger(name)
