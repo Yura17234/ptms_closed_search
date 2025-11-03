@@ -87,7 +87,7 @@ def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: in
     f2 = set(f)
     f2 = [i for i in f2 if i not in dict_of_modifications.keys()]
     logger.info(f'Список модификаций не из словаря:\n{f2}\n')
-    logger.info(len(f2), len(f))
+    logger.info(f'{len(f2)} {len(f)}')
     logger.info(f'Число неправильно прописанных для Identipy модификаций: {count}')
     logger.info(f'Число модификаций {len(list_of_MOD_RES)}')
 
