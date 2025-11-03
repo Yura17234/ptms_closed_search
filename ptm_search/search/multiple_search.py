@@ -1,9 +1,12 @@
+from typing import NoReturn
 import subprocess
 import pandas as pd
 from pyteomics import pepxml
 import os
+import logging
+logger = logging.getLogger(__name__)
 
-def multiple_search(config):
+def multiple_search(config) -> NoReturn:
     '''
         Multiple search
     '''
@@ -13,30 +16,30 @@ def multiple_search(config):
     results_dir.mkdir(exist_ok=True)
 
     config_files = sorted(configs_dir.glob("*.cfg"))
-    print(f'\nНайдено конфигураций:\n{len(config_files)}\n')
+    logger.info(f'\nНайдено конфигураций:\n{len(config_files)}\n')
 
     already_done = {d.stem.split('_result')[0] for d in results_dir.iterdir() if d.is_file()}
 
     for count, cfg_path in enumerate(config_files, 1):
         mod_name = cfg_path.stem
         if mod_name in already_done:
-            print(f"Pass {mod_name} ({count}/{len(config_files)})")
+            logger.info(f"Pass {mod_name} ({count}/{len(config_files)})")
             continue
 
-        print(f"{'':-^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':-^{50}}")
+        logger.info(f"{'':-^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':-^{50}}")
 
-        # === Запуск IdentiPy ===
-        os.system(f'identipy {str(config.work_dir)}/*.mgf -cfg {str(cfg_path)}')
-        # mgf_files = list(config.work_dir.glob('*.mgf'))
-        # identipy_cmd = ["identipy"] + mgf_files + ["-cfg", str(cfg_path)]
-        #
-        # try:
-        #     subprocess.run(identipy_cmd, check=True)
-        # except subprocess.CalledProcessError as e:
-        #     print(f"\nОшибка при запуске IdentiPy:\n{e}")
-        #     continue
+        # --- Запуск IdentiPy ---
+        # os.system(f'identipy {str(config.work_dir)}/*.mgf -cfg {str(cfg_path)}')
+        mgf_files = [str(mgf) for mgf in list(config.work_dir.glob('*.mgf'))]
+        identipy_cmd = ["identipy"] + mgf_files + ["-cfg", str(cfg_path)]
 
-        # === Сбор результатов .pep.xml ===
+        try:
+            subprocess.run(identipy_cmd, check=True)
+        except subprocess.CalledProcessError as e:
+            logger.error(f"\nОшибка при запуске IdentiPy:\n{e}")
+            continue
+
+        # --- Сбор результатов .pep.xml ---
         ptm_all_df = pd.DataFrame()
         for pepxml_file in config.work_dir.glob("*.pep.xml"):
             file_name = pepxml_file.stem
@@ -44,14 +47,10 @@ def multiple_search(config):
             df_pep['file_name'] = file_name
             ptm_all_df = pd.concat([ptm_all_df, df_pep], ignore_index=True)
 
-        # === Сохраняем результаты ===
-        # mod_result_dir = results_dir / mod_name
-        # mod_result_dir.mkdir(exist_ok=True)
+        # --- Сохраняем результаты ---
         result_csv_path = results_dir / f'{mod_name}_result.csv'
         ptm_all_df.to_csv(result_csv_path, index=False)
 
         # Удаление .pep.xml
         for f in config.work_dir.glob("*.pep.xml"):
             f.unlink()
-
-    print('Multiple search -- Done !')
