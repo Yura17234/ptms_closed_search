@@ -1,19 +1,23 @@
 '''
     Парсер config-фалов конфигурации запуска Identipy
 '''
+
+from typing import NoReturn
 import os
 from pathlib import Path
 import configparser
 from configupdater import ConfigUpdater
 import json
+import logging
+logger = logging.getLogger(__name__)
 
 '''
     parse_config_file <-- make_config_files
 '''
 
 # ---------------------------------------------------/ --- /------------------------------------------------------------
-def make_config_files(list_of_MOD_RES, config, variant_of_search_):
-    print(f'Список всех модификаций:\n{list_of_MOD_RES}\n')
+def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: int) -> NoReturn:
+    logger.info(f'Список всех модификаций:\n{list_of_MOD_RES}\n')
 
     module_dir = Path(__file__).parent.parent.resolve()
     with open(module_dir / 'data' / 'ptm_name_to_config_ptm_name_dict.json', 'r') as ptm_name_to_config_ptm_name_file:
@@ -82,14 +86,14 @@ def make_config_files(list_of_MOD_RES, config, variant_of_search_):
 
     f2 = set(f)
     f2 = [i for i in f2 if i not in dict_of_modifications.keys()]
-    print(f'Список модификаций не из словаря:\n{f2}\n')
-    print(len(f2), len(f))
-    print(f'Число неправильно прописанных для Identipy модификаций: {count}')
-    print(f'Число модификаций {len(list_of_MOD_RES)}')
+    logger.info(f'Список модификаций не из словаря:\n{f2}\n')
+    logger.info(len(f2), len(f))
+    logger.info(f'Число неправильно прописанных для Identipy модификаций: {count}')
+    logger.info(f'Число модификаций {len(list_of_MOD_RES)}')
 
 # ---------------------/ Открытие необходимых файлов на чтение и запись. Запуск внутренных функций /--------------------
-def parse_config_file(list_of_MOD_RES_, config, variant_of_search):
+def parse_config_file(list_of_MOD_RES_: list[str], config, variant_of_search: int) -> NoReturn:
     text4 = ' Создание конфигурационных файлов для поиска PTM '
     number4 = int(round((200 - len(text4)) / 2, 0))
-    print(f'{text4:.^{number4}}')
+    logger.info(f'{text4:.^{number4}}')
     make_config_files(list_of_MOD_RES_, config, variant_of_search)

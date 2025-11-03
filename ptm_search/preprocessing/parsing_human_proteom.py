@@ -3,10 +3,14 @@
     замен в белковой последовательности по каждому найденному белку
 '''
 
+from typing import TextIO
+from pandas import DataFrame
 from tqdm import tqdm
 import random
 random.seed(42)
 from ptm_search.preprocessing.modification_name_correction import smaller_groups
+import logging
+logger = logging.getLogger(__name__)
 
 '''
                     /--- smaller_groups
@@ -16,7 +20,7 @@ from ptm_search.preprocessing.modification_name_correction import smaller_groups
 from ptm_search.find_prot_name_sequence import get_protein_name
 
 # -------------------------------/ Функция создает словарь accession - название белка /---------------------------------
-def get_all_accs_and_names(df):
+def get_all_accs_and_names(df: DataFrame) -> dict[str, str]:
     accs_and_names_dict = {}
     for list_accs in tqdm(df["dbname"]):
         for acc in list(list_accs[2:-2].split("', '")):
@@ -24,12 +28,12 @@ def get_all_accs_and_names(df):
                 continue
             accs_and_names_dict[acc.split('|')[1]] = get_protein_name(acc.split('|')[1])
 
-    print(f'Вид словаря accession - название белка:')
-    print( '\n'.join(map(str, [ f'{dict_elm} : {accs_and_names_dict[dict_elm]}' for dict_elm in random.sample(list(accs_and_names_dict.keys()), 5)] )) )
+    logger.info(f'Вид словаря accession - название белка:')
+    logger.info( '\n'.join(map(str, [ f'{dict_elm} : {accs_and_names_dict[dict_elm]}' for dict_elm in random.sample(list(accs_and_names_dict.keys()), 5)] )) )
     return accs_and_names_dict
 
 # ---------------------------------/ Функция формирует списки белков по каждой PTM /------------------------------------
-def get_PTMs_lists(query_text, modres_file, list_of_msms_proteins):
+def get_PTMs_lists(query_text: str, modres_file: TextIO, list_of_msms_proteins: dict[str, str]) -> dict[str, dict[str, list[str]]]:
     PTMs_groups = {}
     query_text_list = query_text.split('\n//\n')
     count = 0
@@ -87,28 +91,28 @@ def get_PTMs_lists(query_text, modres_file, list_of_msms_proteins):
                 modres_file.write(correct_prot_modif_name + '\n')
                 modres_file.write('\n')
 
-    print(f'Число антотаций белков: {count}')
+    logger.info(f'Число антотаций белков: {count}')
     modres_file.close()
 
-    print(f'Словарь модификаций и их белков:')
-    print('\n'.join(map(str, [f'{dict_elm} : {[*PTMs_groups[dict_elm].keys()][0:5]}' for dict_elm in random.sample(list(PTMs_groups.keys()), 5)])))
-    print(f'Число модификаций, которые не узнал встроенный словарь: {len(set(list_of_missed_modifs))}\n')
-    print(f'Список модификаций, которые не узнал встроенный словарь: {set(list_of_missed_modifs)}\n')
+    logger.info(f'Словарь модификаций и их белков:')
+    logger.info('\n'.join(map(str, [f'{dict_elm} : {[*PTMs_groups[dict_elm].keys()][0:5]}' for dict_elm in random.sample(list(PTMs_groups.keys()), 5)])))
+    logger.info(f'Число модификаций, которые не узнал встроенный словарь: {len(set(list_of_missed_modifs))}\n')
+    logger.info(f'Список модификаций, которые не узнал встроенный словарь: {set(list_of_missed_modifs)}\n')
     return PTMs_groups
 
 # ---------------------/ Открытие необходимых файлов на чтение и запись. Запуск внутренных функций /--------------------
-def parsing_human_proteom(config, dataframe):
+def parsing_human_proteom(config, dataframe: DataFrame) -> tuple[dict[str, dict[str, list[str]]], dict[str, str]]:
     text1 = ' Парсинг протеома в UniProt для поиска ПТМ '
     number1 = int(round((200 - len(text1)) / 2, 0))
-    print(f'{text1:.^{number1}}')
+    logger.info(f'{text1:.^{number1}}')
     # Протеом человека из UniProt
     with open(config.uniprot_query_path, 'r') as query_file:
         query_text = query_file.read()
-    print(config.uniprot_query_path)
+    logger.info(config.uniprot_query_path)
 
     # Запись модификаций белков в текстовый файл
     modres_file = open(config.ptm_search_dir / f'{config.experiment_name}_MOD_RES_{config.analysis_index}.txt', 'w')
-    print(config.ptm_search_dir / f'{config.experiment_name}_MOD_RES_{config.analysis_index}.txt')
+    logger.info(config.ptm_search_dir / f'{config.experiment_name}_MOD_RES_{config.analysis_index}.txt')
 
     prot_acc_and_names = get_all_accs_and_names(dataframe)
     return get_PTMs_lists(query_text, modres_file, prot_acc_and_names), prot_acc_and_names

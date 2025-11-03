@@ -1,12 +1,16 @@
 '''
     Получение fasta-файла
 '''
+
+from typing import NoReturn, TextIO
 from tqdm import tqdm
 import os
 from random import sample
 import json
 from pathlib import Path
 import gzip
+import logging
+logger = logging.getLogger(__name__)
 
 '''
     make_fasta_file_for_searches <-- make_fasta_file
@@ -16,7 +20,7 @@ import requests as r
 import io
 import pyteomics.fasta
 
-def make_fasta_file(proteins_from_msms_with_ptms_, ptm_groups_, fasta_file_, config):
+def make_fasta_file(proteins_from_msms_with_ptms_: list[str], ptm_groups_: dict[str, dict[str, list[str]]], fasta_file_: TextIO, config) -> NoReturn:
     baseUrl="http://www.uniprot.org/uniprot/"
 
     module_dir = Path(__file__).parent.parent.resolve()
@@ -35,7 +39,7 @@ def make_fasta_file(proteins_from_msms_with_ptms_, ptm_groups_, fasta_file_, con
         if '>' in fasta_line:
             proteom_accessions_.append(fasta_line.split('|')[1])
     proteom_accessions_ = list(set(proteom_accessions_))
-    print(f'Количество белков в изначальной базе поиска fasta-файла: {len(proteom_accessions_)}\nКоличество белков, которые будут проверяться на модификации: {len(proteins_from_msms_with_ptms_)}')
+    logger.info(f'Количество белков в изначальной базе поиска fasta-файла: {len(proteom_accessions_)}\nКоличество белков, которые будут проверяться на модификации: {len(proteins_from_msms_with_ptms_)}')
 
     # Загрузка 5000 последовательностей (target'ов)
     Additional_proteins_for_search = []
@@ -80,10 +84,10 @@ def make_fasta_file(proteins_from_msms_with_ptms_, ptm_groups_, fasta_file_, con
                                        mode='reverse', prefix='DECOY_', decoy_only=False)
 
 # ---------------------/ Открытие необходимых файлов на чтение и запись. Запуск внутренных функций /--------------------
-def make_fasta_file_for_searches(proteins_from_msms_with_ptms, ptm_groups, fasta_file, config):
+def make_fasta_file_for_searches(proteins_from_msms_with_ptms: list[str], ptm_groups: dict[str, dict[str, list[str]]], fasta_file: TextIO, config) -> NoReturn:
     text3 = ' Создание базы данных для поиска PTM '
     number3 = int(round((200 - len(text3)) / 2, 0))
-    print(f'{text3:.^{number3}}')
-    print(f'\nКоличество белков для которых предполагаются PTM: {len(proteins_from_msms_with_ptms)}')
+    logger.info(f'{text3:.^{number3}}')
+    logger.info(f'\nКоличество белков для которых предполагаются PTM: {len(proteins_from_msms_with_ptms)}')
 
     make_fasta_file(proteins_from_msms_with_ptms, ptm_groups, fasta_file, config)

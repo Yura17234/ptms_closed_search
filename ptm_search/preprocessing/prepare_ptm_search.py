@@ -1,8 +1,11 @@
+from typing import NoReturn
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import glob
 import shutil
+import logging
+logger = logging.getLogger(__name__)
 
 from ptm_search.preprocessing.parsing_human_proteom import parsing_human_proteom
 from ptm_search.preprocessing.adding_ptm_info_from_db_ptm import adding_ptm_info_from_db_ptm
@@ -11,7 +14,7 @@ from ptm_search.preprocessing.make_fasta_file_for_searches import make_fasta_fil
 from ptm_search.preprocessing.parse_config_file import parse_config_file
 from ptm_search.preprocessing.make_mgfs_for_ptm import make_mgfs_for_ptm
 
-def prepare_ptm_search(config):
+def prepare_ptm_search(config) -> NoReturn:
     '''
         Prepare PTM search
     '''
@@ -28,19 +31,17 @@ def prepare_ptm_search(config):
             shutil.move(file, dest)
 
     st_search_df = pd.read_csv(config.st_search_dir / f"union_proteins.tsv", sep='\t')
-    print(config.st_search_dir / f"union_proteins.tsv")
+    logger.info(config.st_search_dir / f"union_proteins.tsv")
 
     ''' 1 '''
     grouped_prots_by_ptms_dict, acc_to_names_dict = parsing_human_proteom(config, st_search_df)
 
-    # print(f'Количество белков из стандартного начального поиска: {len(list(dict_acc_to_names.keys()))}')
-    # print(st_search_df.head())
+    logger.info(f'Количество белков из стандартного начального поиска: {len(list(acc_to_names_dict.keys()))}')
     grouped_prots_by_ptms_dict = adding_ptm_info_from_db_ptm(grouped_prots_by_ptms_dict, list(acc_to_names_dict.keys()))
 
     ''' 2 '''
     ptm_info_df = make_ptms_df(grouped_prots_by_ptms_dict, acc_to_names_dict, config)
-    # print(ptm_info_df.head())
-    # print()
+    logger.info(ptm_info_df.head())
 
     ptm_counts = ptm_info_df.drop_duplicates(subset=['accession', 'PTM'], keep='first')['PTM'].value_counts(
         sort=True).head(15)
@@ -64,5 +65,3 @@ def prepare_ptm_search(config):
     # Создание mgf-файлов из не идентифицированных спектров для PTM-поиска
     if all(['_for_PTM.mgf' not in file for file in os.listdir(f'{config.ptm_search_dir}')]):
         make_mgfs_for_ptm(mgf_dir, config)
-
-    print('prepare_ptm_search -- Done !')
