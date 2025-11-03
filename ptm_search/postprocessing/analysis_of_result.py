@@ -2,18 +2,20 @@
     Скрипт выполняющий стандартную обработку результатов поиска PTM
 '''
 
+from typing import NoReturn
 import json
 import pandas as pd
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 from pathlib import Path
 from tqdm import tqdm
 from pyteomics.parser import coverage
+import logging
+logger = logging.getLogger(__name__)
 
-def clear_acc_and_add_alt_acc(df_psms):
+def clear_acc_and_add_alt_acc(df_psms: pd.DataFrame) -> pd.DataFrame:
     new_df_psms = pd.DataFrame(columns=list(df_psms.columns) + ['accession_of_protein'])
     accs_list = []
     for index, row in df_psms.iterrows():
@@ -29,7 +31,7 @@ def clear_acc_and_add_alt_acc(df_psms):
 from ptm_search.find_prot_name_sequence import (get_protein_sequence, get_protein_name)
 # ----------------------------------------------------------------------------------------------------------------------
 
-def get_count_peptides_for_proteins(dict_prot):
+def get_count_peptides_for_proteins(dict_prot: dict[str, list[str]]) -> pd.DataFrame:
     df_count_detect_peptides = pd.DataFrame(columns=['accession', 'peptides', 'count_of_peptides', 'coverage_%'])
     for prot3 in dict_prot.keys():
         # Подсчет покрытия
@@ -43,7 +45,7 @@ def get_count_peptides_for_proteins(dict_prot):
     return df_count_detect_peptides
 # ----------------------------------------------------------------------------------------------------------------------
 
-def give_names(accs):
+def give_names(accs: list[str]) -> list[str]:
     names_list = []
     dict_of_protein_names = {}
 
@@ -65,13 +67,13 @@ def give_names(accs):
                     /--- give_names <-- get_protein_name
     get_plots_from_result_of_analysis <-- get_count_peptides_for_proteins <-- make_dictionary_of_proteins
 '''
-def get_plots_from_result_of_analysis(SS_and_PTM_PSMs, SS_peptides, config, fdr_analysis_dir):
+def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides: pd.DataFrame, config, fdr_analysis_dir: Path) -> NoReturn:
     PTM_PSMs = SS_and_PTM_PSMs.query('Search != "Standard search" & modifications != "[]"')
 
     # ------------------------------------------------------------------------------------------------------------------
     SS_peptides = clear_acc_and_add_alt_acc(SS_peptides)
     PTM_PSMs = clear_acc_and_add_alt_acc(PTM_PSMs)
-    print(PTM_PSMs.shape)
+    logger.info(PTM_PSMs.shape)
 
     info_from_uniprot = pd.read_csv(config.ptm_search_dir / f'{config.experiment_name}_PTM_info_from_UniProt_{config.analysis_index}.csv')
     if config.search_mode == 'fast_search':
@@ -82,7 +84,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs, SS_peptides, config, fdr_
                 list(info_from_uniprot.query(f'PTM == "{ptm}"')["accession"]))]
             new_PTM_PSMs = pd.concat([new_PTM_PSMs, temporary_PTM_PSMs], ignore_index=True)
         PTM_PSMs = new_PTM_PSMs
-        print(PTM_PSMs.shape)
+        logger.info(PTM_PSMs.shape)
 
     dict_PTM_prot_peptides = PTM_PSMs.groupby('accession_of_protein')['peptide'].apply(list).to_dict()
     dict_prot_peptides = SS_peptides.groupby('accession_of_protein')['peptide'].apply(list).to_dict()
@@ -109,8 +111,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs, SS_peptides, config, fdr_
     df5_prot_PTM = df5_prot_PTM[df5_prot_PTM["count_of_peptides_delta"].notna()]
     df5_prot_PTM.to_csv(fdr_analysis_dir / f'{config.experiment_name}_increasing_coverage_of_peptides_{config.analysis_index}.csv',
                         encoding='utf-8', index=False)
-    print()
-    print(f'{df5_prot_PTM.head(10)}\n')
+    logger.info(f'\n{df5_prot_PTM.head(10)}\n')
 
 
     plt.figure(figsize=(15, 15))

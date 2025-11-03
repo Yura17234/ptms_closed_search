@@ -1,6 +1,9 @@
+from typing import NoReturn, TextIO
 import pandas as pd
 import numpy as np
 import ast
+import logging
+logger = logging.getLogger(__name__)
 
 from ptm_search.postprocessing.fdr_filtration import (
     threshold_calculation_identipy,
@@ -10,7 +13,7 @@ from ptm_search.postprocessing.analysis_of_result import get_plots_from_result_o
 
 pd.options.mode.chained_assignment = None
 
-def clear_ptm_psms(df_psms, list_accs_ptm_info):
+def clear_ptm_psms(df_psms: pd.DataFrame, list_accs_ptm_info: list[str]) -> pd.DataFrame:
     acc_was_in_ptm_info = []
     for list_accs in df_psms['accessions_list']:
         if any(acc in list_accs_ptm_info for acc in list_accs.split('|')):
@@ -23,7 +26,7 @@ def clear_ptm_psms(df_psms, list_accs_ptm_info):
     df_psms = df_psms.drop(columns=['acc_was_in_ptm_info'])
     return df_psms
 
-def mark_variable_modifications(modifications_column_PSMs):
+def mark_variable_modifications(modifications_column_PSMs: list[str]) -> list[str]:
     list_of_markers_of_variable = []
     for line in modifications_column_PSMs:
         result = '-'
@@ -34,10 +37,10 @@ def mark_variable_modifications(modifications_column_PSMs):
         list_of_markers_of_variable.append(result)
     return list_of_markers_of_variable
 
-def mark_decoys_and_targets(psms_description):
+def mark_decoys_and_targets(psms_description: list[str]) -> list[bool]:
     return ["'sp" not in n for n in psms_description]
 
-def calculate_threshold(decoys, targets, log_file, config, ptm_name, log_dir):
+def calculate_threshold(decoys: pd.DataFrame, targets: pd.DataFrame, log_file: TextIO, config, ptm_name: str, log_dir: str) -> tuple[float, dict[float, float]]:
     if config.fdr_strategy == 'transferred_fdr':
         return threshold_calculation_for_PTM_by_ranks(
             decoys[['PTM', 'rank']],
@@ -52,7 +55,7 @@ def calculate_threshold(decoys, targets, log_file, config, ptm_name, log_dir):
             targets[['PTM', 'rank']],#.query("PTM == '+'"),
             log_file)
 
-def aggregate_results(config):
+def aggregate_results(config) -> NoReturn:
     '''
         Aggregate results
     '''
@@ -80,7 +83,7 @@ def aggregate_results(config):
         raw_result_dir = config.ptm_search_dir / f'{config.analysis_index}_result_{config.search_mode}'
         for index, ptm_file_path in enumerate(raw_result_dir.glob('*_result.csv'), start=1):
             ptm_name = ptm_file_path.stem.split(config.analysis_index)[0][:-1].replace('_', ' ')
-            print(f'{index} / {len(list(raw_result_dir.iterdir()))} | {ptm_name}')
+            logger.info(f'{index} / {len(list(raw_result_dir.iterdir()))} | {ptm_name}')
             if not ptm_file_path.exists():
                 continue
 
@@ -92,6 +95,7 @@ def aggregate_results(config):
             ptm_df['decoy'] = mark_decoys_and_targets(ptm_df['protein'])
             ptm_df['PTM'] = '+'
 
+            full_df = pd.DataFrame()
             if config.fdr_strategy == 'transferred_fdr':
                 full_df = pd.concat([ss_psms, ptm_df], ignore_index=True).sort_values('hyperscore')
                 full_df['rank'] = range(1, len(full_df) + 1)
@@ -106,7 +110,7 @@ def aggregate_results(config):
             try:
                 threshold, q_values = calculate_threshold(decoy, target, log_file, config, ptm_name, log_dir)
             except:
-                print(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
+                logger.info(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
                 continue
 
             if config.fdr_strategy == 'transferred_fdr':
@@ -116,7 +120,7 @@ def aggregate_results(config):
 
             for rank_val, q_val in sorted(q_values.items()):
                 ptm_df.loc[ptm_df['rank'] > rank_val, 'q_value'] = q_val
-            print(f'Размер результата анализа после фильтрации по {ptm_name} : {ptm_df.shape}')
+            logger.info(f'Размер результата анализа после фильтрации по {ptm_name} : {ptm_df.shape}')
             log_file.write(f'Размер результата анализа после фильтрации по {ptm_name} : {ptm_df.shape}\n')
 
             ptm_df['accessions_list'] = ptm_df['protein'].apply(lambda x: '|'.join([p.split('|')[1] for p in ast.literal_eval(x)]))
@@ -124,7 +128,7 @@ def aggregate_results(config):
             if config.search_mode == 'fast_search':
                 valid_accs = ptm_uniprot_info_df.query(f'PTM == "{ptm_name}"')['accession'].tolist()
                 ptm_df = clear_ptm_psms(ptm_df, valid_accs)
-                print(f'Размер результата анализа после фильтрации на наличие информации в UniProt по {ptm_name} : {ptm_df.shape}')
+                logger.info(f'Размер результата анализа после фильтрации на наличие информации в UniProt по {ptm_name} : {ptm_df.shape}')
                 log_file.write(f'Размер результата анализа после фильтрации на наличие информации в UniProt по {ptm_name} : {ptm_df.shape}\n\n')
 
             all_fdr_ptm_psms = pd.concat([all_fdr_ptm_psms, ptm_df], ignore_index=True)
@@ -141,5 +145,3 @@ def aggregate_results(config):
 
     ss_peptides = pd.read_csv(config.st_search_dir / 'union_peptides.tsv', sep='\t')
     get_plots_from_result_of_analysis(all_fdr_ptm_psms, ss_peptides, config, fdr_analysis_dir)
-
-    print('Aggregate results -- Done !')
