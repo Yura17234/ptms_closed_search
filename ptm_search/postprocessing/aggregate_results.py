@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import ast
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("aggregate_results")
 
 from ptm_search.postprocessing.fdr_filtration import (
     threshold_calculation_identipy,

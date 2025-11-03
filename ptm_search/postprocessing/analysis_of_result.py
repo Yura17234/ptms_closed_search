@@ -13,7 +13,7 @@ from pathlib import Path
 from tqdm import tqdm
 from pyteomics.parser import coverage
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("aggregate_results")
 
 def clear_acc_and_add_alt_acc(df_psms: pd.DataFrame) -> pd.DataFrame:
     new_df_psms = pd.DataFrame(columns=list(df_psms.columns) + ['accession_of_protein'])

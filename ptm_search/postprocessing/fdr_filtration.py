@@ -14,7 +14,7 @@ from sklearn.preprocessing import SplineTransformer
 from sklearn.linear_model import Ridge
 from sklearn.metrics import r2_score, mean_squared_error
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("aggregate_results")
 
 def threshold_calculation_identipy(df_decoy: pd.DataFrame, df_target: pd.DataFrame, log_file: TextIO) -> tuple[float, dict[float, float]]:
     fdr_threshold, fdr_list, thresholds_q_values_dict = 0, [], {}
