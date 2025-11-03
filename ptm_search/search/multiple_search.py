@@ -4,7 +4,7 @@ import pandas as pd
 from pyteomics import pepxml
 import os
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("multiple_search")
 
 def multiple_search(config) -> NoReturn:
     '''
