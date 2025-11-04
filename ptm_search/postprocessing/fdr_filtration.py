@@ -13,10 +13,11 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import SplineTransformer
 from sklearn.linear_model import Ridge
 from sklearn.metrics import r2_score, mean_squared_error
+from pathlib import Path
 import logging
 logger = logging.getLogger("aggregate_results")
 
-def threshold_calculation_identipy(df_decoy: pd.DataFrame, df_target: pd.DataFrame, log_file: TextIO) -> tuple[float, dict[float, float]]:
+def threshold_calculation_separate_fdr(df_decoy: pd.DataFrame, df_target: pd.DataFrame) -> tuple[float, dict[float, float]]:
     fdr_threshold, fdr_list, thresholds_q_values_dict = 0, [], {}
 
     for i in tqdm(np.linspace(int(df_decoy['rank'].min()), int(df_target['rank'].max()), 1000, dtype=int)[::-1]):
@@ -57,20 +58,20 @@ def threshold_calculation_identipy(df_decoy: pd.DataFrame, df_target: pd.DataFra
         if fdr > 0.01:
             if round(fdr_list[-1], 2) <= 0.01:
                 logger.info(f'rounded FDR value: {round(fdr_list[-1], 2)}')
-                log_file.write(f'rounded FDR value: {round(fdr_list[-1], 2)}\n')
+                # log_file.write(f'rounded FDR value: {round(fdr_list[-1], 2)}\n')
                 logger.info('===============')
                 logger.info(fdr_list[-1], fdr_threshold)
-                log_file.write(f'===============\nFDR: {fdr_list[-1]}, rank threshold: {fdr_threshold}\n\n')
+                # log_file.write(f'===============\nFDR: {fdr_list[-1]}, rank threshold: {fdr_threshold}\n\n')
                 return fdr_threshold, thresholds_q_values_dict
             logger.info('BAD')
             logger.info(fdr_list[-1], fdr_threshold)
-            log_file.write(f'BAD\n{fdr_list[-1]}, {fdr_threshold}\n\n')
+            # log_file.write(f'BAD\n{fdr_list[-1]}, {fdr_threshold}\n\n')
             break
 
         if fdr <= 0.01 and fdr >= 0.0095:
             logger.info('===============')
             logger.info(f'FDR: {fdr}, rank threshold: {i}')
-            log_file.write(f'\n===============\nFDR: {fdr}, rank threshold: {i}')
+            # log_file.write(f'\n===============\nFDR: {fdr}, rank threshold: {i}')
             return fdr_threshold, thresholds_q_values_dict
 
 def adaptive_spline_number_knots(n_points, max_points=1000, max_knots=12, min_knots=3):
@@ -98,10 +99,8 @@ def generate_knots(first_ref_threshold_, rank_before_err_, index_before_err_, th
             np.linspace(first_ref_threshold_, max(thresholds_before_err_), number_knots_2, dtype=int).tolist()[1:]
         )).reshape(-1, 1)
 
-def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm: pd.DataFrame, df_target_ss_and_ptm: pd.DataFrame, log_dir: str, log_file, config, ptm_name: str) -> tuple[float, dict[float, float]]:
-    # df_target_ss = df_target_ss_and_ptm.query("PTM == '-'")
+def threshold_calculation_transferred_fdr(df_decoy_ss_and_ptm: pd.DataFrame, df_target_ss_and_ptm: pd.DataFrame, ratio_info_dir: Path, ptm_name: str) -> tuple[float, dict[float, float]]:
     df_target_ptm = df_target_ss_and_ptm.query("PTM == '+'")
-    # df_decoy_ss = df_decoy_ss_and_ptm.query("PTM == '-'")
     df_decoy_ptm = df_decoy_ss_and_ptm.query("PTM == '+'")
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -191,22 +190,25 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm: pd.DataFrame, df
     plt.scatter(thresholds, ptm_proportions, color='#3399ff', s=40, alpha=0.4, edgecolors="#404040", label='Пропорция')
     plt.plot(df_spline['thresholds'], df_spline['predicted_proportions'], color='red', label='Сплайн регрессии')
 
-    r_squared = r'$R^2 =$' + str(round(r2_score(ptm_proportions[0:index_before_err + 1],
-                                                spl.predict(np.array(thresholds_before_err).reshape((-1, 1)))), 2))
-    # log_file.write(f'R^2 = {round(r2_score(proportions[0:index_before_err], spl.predict(np.array(thresholds_before_err).reshape((-1, 1)))), 2)}\n')
-    plt.text(X_test.max() * (85 / 100), y_test.max() * (90 / 100), r_squared, weight='bold',
-             horizontalalignment='center')
+    # ------------------------------------------------------------------------------------------------------------------
+    y_true = ptm_proportions[:index_before_err + 1]
+    y_pred = spl.predict(np.array(thresholds_before_err).reshape(-1, 1))
 
-    rmse = r'$RMSE =$' + str(round(np.sqrt(mean_squared_error(ptm_proportions[0:index_before_err + 1], spl.predict(
-        np.array(thresholds_before_err).reshape((-1, 1))))), 4))
-    # log_file.write(f'RMSE = {round(np.sqrt(mean_squared_error(proportions[0:index_before_err], spl.predict(np.array(thresholds[0:index_before_err]).reshape((-1, 1))))), 4)}\n')
-    plt.text(X_test.max() * (85 / 100), y_test.max() * (85 / 100), rmse, weight='bold', horizontalalignment='center')
+    r2 = r2_score(y_true, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+
+    plt.text(X_test.max() * 0.85, y_test.max() * 0.90,
+             fr'$R^2 = {r2:.4f}$', weight='bold', ha='center')
+    plt.text(X_test.max() * 0.85, y_test.max() * 0.85,
+             fr'$RMSE = {rmse:.4f}$', weight='bold', ha='center')
+
+    logger.info(f'R² = {r2:.4f}')
+    logger.info(f'RMSE = {rmse:.4f}\n')
+    # ------------------------------------------------------------------------------------------------------------------
 
     plt.axvline(x=first_ref_threshold, color='red', linestyle="--")
     if rank_before_err != 0:
         plt.axvline(rank_before_err, color="green", linestyle="--")
-    # plt.axvline(threshold1, color="#FF7B00", linestyle="-")
-    # plt.axvline(gaus_threshold, color="#0044FF", linestyle="-")
     plt.xlabel('Threshold rank')
     plt.ylabel('Proportion')
     plt.legend()
@@ -215,13 +217,11 @@ def threshold_calculation_for_PTM_by_ranks(df_decoy_ss_and_ptm: pd.DataFrame, df
     plt.scatter(thresholds, error_propagation, color='#33cc33', s=40, alpha=0.4, edgecolors="#404040")
     if rank_before_err != 0:
         plt.axvline(rank_before_err, color="green", linestyle="--")
-    # plt.axvline(threshold1, color="#FF7B00", linestyle="-")
-    # plt.axvline(gaus_threshold, color="#0044FF", linestyle="-")
     plt.xlabel("Threshold rank")
     plt.ylabel("Error propagation")
 
     plt.figtext(0.5, 0.9, f'{ptm_name}', ha='center', va='center')
-    plt.savefig(log_dir / f"{ptm_name.replace(' ', '_')}_Proportion_and_spline_regression.png", dpi=100,
+    plt.savefig(ratio_info_dir / f"{ptm_name.replace(' ', '_')}_Proportion_and_spline_regression.png", dpi=100,
                 bbox_inches='tight')
     plt.close(fig)
     # ------------------------------------------------------------------------------------------------------------------
