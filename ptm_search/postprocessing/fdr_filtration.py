@@ -24,8 +24,7 @@ def threshold_calculation_separate_fdr(df_decoy: pd.DataFrame, df_target: pd.Dat
         x = df_decoy.query(f'rank >= {i}').shape[0]
         y = df_target.query(f'rank >= {i}').shape[0]
         if y == 0:
-            logger.info('BAD')
-            logger.info(f'FDR: {fdr_list[-1]}, rank threshold: {i}')
+            logger.info(f'BAD -- FDR: {fdr_list[-1]}, rank threshold: {i}')
             break
         fdr = x / y
 
@@ -57,14 +56,13 @@ def threshold_calculation_separate_fdr(df_decoy: pd.DataFrame, df_target: pd.Dat
 
         if fdr > 0.01:
             if round(fdr_list[-1], 2) <= 0.01:
-                logger.info(f'rounded FDR value: {round(fdr_list[-1], 2)}')
+                logger.info(f'rounded FDR value: {fdr_list[-1]:.4f}')
                 # log_file.write(f'rounded FDR value: {round(fdr_list[-1], 2)}\n')
-                logger.info('===============')
-                logger.info(fdr_list[-1], fdr_threshold)
+                logger.info('---------------')
+                logger.info(f'FDR PTM: {fdr_list[-1]:.4f}, Threshold: {fdr_threshold}')
                 # log_file.write(f'===============\nFDR: {fdr_list[-1]}, rank threshold: {fdr_threshold}\n\n')
                 return fdr_threshold, thresholds_q_values_dict
-            logger.info('BAD')
-            logger.info(fdr_list[-1], fdr_threshold)
+            logger.info(f'BAD -- min FDR PTM: {fdr_list[-1]:.4f}, Threshold: {fdr_threshold}')
             # log_file.write(f'BAD\n{fdr_list[-1]}, {fdr_threshold}\n\n')
             break
 
@@ -235,8 +233,7 @@ def threshold_calculation_transferred_fdr(df_decoy_ss_and_ptm: pd.DataFrame, df_
             gamma_coef = spl.predict(np.array([i]).reshape((-1, 1)))[0]
             fdr_ptm = lambda_coef * gamma_coef * fdr
         except:
-            logger.info('BAD')
-            logger.info(fdrs_ptm_list[-1], fdr_threshold)
+            logger.info(f'BAD -- min FDR PTM: {fdrs_ptm_list[-1]:.4f}, Threshold: {fdr_threshold}')
             # return
             break
 
@@ -266,17 +263,15 @@ def threshold_calculation_transferred_fdr(df_decoy_ss_and_ptm: pd.DataFrame, df_
         thresholds_q_values_dict[i] = fdr_ptm
         fdrs_ptm_list.append(fdr_ptm)
 
-
         if fdr_ptm > 0.01:
             if round(fdrs_ptm_list[-1], 2) <= 0.01:
-                logger.info(f'rounded FDR value: {round(fdrs_ptm_list[-1], 2)}')
+                logger.info(f'rounded FDR value: {fdrs_ptm_list[-1]:.4f}')
+                logger.info('---------------')
+                logger.info(f'FDR PTM: {fdrs_ptm_list[-1]:.4f}, Threshold: {fdr_threshold}')
                 # log_file.write(f'rounded FDR value: {round(fdrs_ptm_list[-1], 2)}\n')
-                logger.info('===============')
-                logger.info(fdrs_ptm_list[-1], fdr_threshold)
                 # log_file.write(f'===============\nFDR: {fdrs_ptm_list[-1]}, rank threshold: {fdr_threshold}\n\n')
                 return fdr_threshold, thresholds_q_values_dict
-            logger.info('BAD')
-            logger.info(fdrs_ptm_list[-1], fdr_threshold)
+            logger.info(f'BAD -- min FDR PTM: {fdrs_ptm_list[-1]:.4f}, Threshold: {fdr_threshold}')
             # return fdr_threshold, thresholds_q_values_dict
             # return
             break
@@ -285,7 +280,7 @@ def threshold_calculation_transferred_fdr(df_decoy_ss_and_ptm: pd.DataFrame, df_
             # break
 
         if fdr_ptm <= 0.01 and fdr_ptm >= 0.0095:  # 0.0089 | 0.005
-            logger.info('===============')
-            logger.info(fdr_ptm, fdr_threshold)
+            logger.info('---------------')
+            logger.info(f'FDR PTM: {fdr_ptm}, Threshold: {fdr_threshold}')
             # log_file.write(f'===============\nFDR: {fdr_ptm}, rank threshold: {fdr_threshold}\n\n')
             return fdr_threshold, thresholds_q_values_dict
