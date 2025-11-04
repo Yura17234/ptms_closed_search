@@ -107,7 +107,7 @@ def aggregate_results(config) -> NoReturn:
             try:
                 threshold, q_values = calculate_threshold(decoy, target, config, ptm_name, ratio_info_dir)
             except:
-                logger.info(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
+                logger.error(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
                 continue
 
             if config.fdr_strategy == 'transferred_fdr':
