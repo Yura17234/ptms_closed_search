@@ -130,6 +130,10 @@ def aggregate_results(config) -> NoReturn:
 
             all_fdr_ptm_psms = pd.concat([all_fdr_ptm_psms, ptm_df], ignore_index=True)
 
+        all_fdr_ptm_psms['scan'] = all_fdr_ptm_psms['spectrum'].str.split('scan=').str[1]
+        all_fdr_ptm_psms['file_scan_peptide_id'] = all_fdr_ptm_psms['file_name']+'.'+all_fdr_ptm_psms['scan']+'.'+all_fdr_ptm_psms['peptide']
+        all_fdr_ptm_psms = all_fdr_ptm_psms.loc[all_fdr_ptm_psms.groupby(['file_scan_peptide_id'])['hyperscore'].idxmax()]
+
         all_fdr_ptm_psms.to_csv(fdr_result_file_path, index=False)
 
         logger.info(str(all_fdr_ptm_psms.shape))
