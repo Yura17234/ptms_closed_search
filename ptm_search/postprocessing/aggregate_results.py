@@ -136,7 +136,7 @@ def aggregate_results(config) -> NoReturn:
 
         all_fdr_ptm_psms.to_csv(fdr_result_file_path, index=False)
 
-        logger.info(str(all_fdr_ptm_psms.shape))
+        logger.info(f'Result dataframe :\n{all_fdr_ptm_psms.shape}')
         # log_file.close()
     else:
         all_fdr_ptm_psms = pd.read_csv(fdr_result_file_path)
