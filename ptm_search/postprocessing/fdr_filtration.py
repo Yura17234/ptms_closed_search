@@ -201,7 +201,7 @@ def threshold_calculation_transferred_fdr(df_decoy_ss_and_ptm: pd.DataFrame, df_
              fr'$RMSE = {rmse:.4f}$', weight='bold', ha='center')
 
     logger.info(f'R² = {r2:.4f}')
-    logger.info(f'RMSE = {rmse:.4f}\n')
+    logger.info(f'RMSE = {rmse:.4f}')
     # ------------------------------------------------------------------------------------------------------------------
 
     plt.axvline(x=first_ref_threshold, color='red', linestyle="--")
@@ -281,6 +281,6 @@ def threshold_calculation_transferred_fdr(df_decoy_ss_and_ptm: pd.DataFrame, df_
 
         if fdr_ptm <= 0.01 and fdr_ptm >= 0.0095:  # 0.0089 | 0.005
             logger.info('---------------')
-            logger.info(f'FDR PTM: {fdr_ptm}, Threshold: {fdr_threshold}')
+            logger.info(f'FDR PTM: {fdr_ptm:.4f}, Threshold: {fdr_threshold}')
             # log_file.write(f'===============\nFDR: {fdr_ptm}, rank threshold: {fdr_threshold}\n\n')
             return fdr_threshold, thresholds_q_values_dict
