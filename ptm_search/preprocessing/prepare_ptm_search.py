@@ -31,7 +31,11 @@ def prepare_ptm_search(config) -> NoReturn:
             shutil.move(file, dest)
 
     st_search_df = pd.read_csv(config.st_search_dir / f"union_proteins.tsv", sep='\t')
-    logger.info(config.st_search_dir / f"union_proteins.tsv")
+    if st_search_df.shape[0] > 10000:
+        st_search_df = pd.read_csv(config.st_search_dir / f"union_protein_groups.tsv", sep='\t')
+        logger.info(f"using: union_protein_groups.tsv\nfrom {str(config.st_search_dir)}")
+    else:
+        logger.info(f"using: union_proteins.tsv\nfrom {str(config.st_search_dir)}")
 
     ''' 1 '''
     grouped_prots_by_ptms_dict, acc_to_names_dict = parsing_human_proteom(config, st_search_df)
