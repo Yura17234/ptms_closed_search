@@ -39,6 +39,7 @@ work_dir = identipy_work/HEK293
 uniprot_query_path = Query_uniprotkb_proteome_UP000005640_AND_prot_2024_07_27.txt
 fasta_path = UP000005640_9606_reverse.fasta
 base_config_path = identipy_work/edited_default.cfg
+additional_lists_path = identipy_work/HEK293/additional_lists.txt ; or nothing if no additional proteins for ptm search
 ```
 
 ```bash
