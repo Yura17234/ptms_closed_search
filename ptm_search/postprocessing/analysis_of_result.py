@@ -1,7 +1,3 @@
-'''
-    Скрипт выполняющий стандартную обработку результатов поиска PTM
-'''
-
 from typing import NoReturn
 import json
 import pandas as pd
@@ -34,10 +30,10 @@ from ptm_search.find_prot_name_sequence import (get_protein_sequence, get_protei
 def get_count_peptides_for_proteins(dict_prot: dict[str, list[str]]) -> pd.DataFrame:
     df_count_detect_peptides = pd.DataFrame(columns=['accession', 'peptides', 'count_of_peptides', 'coverage_%'])
     for prot3 in dict_prot.keys():
-        # Подсчет покрытия
+        # Calculating coverage
         try:
             seq_coverage = coverage(get_protein_sequence(prot3), list(set(dict_prot[prot3]))) * 100
-        except:  # Если последовательность не нашлась
+        except:  # If the sequence is not found
             seq_coverage = 0.0
 
         df_count_detect_peptides.loc[len(df_count_detect_peptides)] = [prot3, ";".join(map(str, dict_prot[prot3])), len(dict_prot[prot3]), seq_coverage]
@@ -67,6 +63,11 @@ def give_names(accs: list[str]) -> list[str]:
                     /--- give_names <-- get_protein_name
     get_plots_from_result_of_analysis <-- get_count_peptides_for_proteins <-- make_dictionary_of_proteins
 '''
+
+'''
+    Plotting of PTM search results
+'''
+
 def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides: pd.DataFrame, config, fdr_analysis_dir: Path) -> NoReturn:
     PTM_PSMs = SS_and_PTM_PSMs.query('Search != "Standard search" & modifications != "[]"')
 
@@ -102,10 +103,10 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
 
     df5_prot_PTM = pd.merge(df_PTM_and_SS_prot_peptides, df_SS_prot_peptides, how="outer", on=["accession"], suffixes=('_PTM', '_FS'))
 
-    '''Увеличение покрытия белков в msms идентификаии (нахождение новых пептидов для ранее определенных белков)'''
+    ''' Increasing protein coverage in MSMS identification (finding new peptides for previously idefined proteins) '''
     df5_prot_PTM["count_of_peptides_delta"] = df5_prot_PTM["count_of_peptides_PTM"] - df5_prot_PTM["count_of_peptides_FS"]
     df5_prot_PTM["Protein_Name"] = give_names(df5_prot_PTM["accession"])
-    # Убираем все белки без нормального ID (но по сути это наверно все из списка контоминант)
+    # remove all proteins without a normal ID (all from the list of contaminants)
     df5_prot_PTM = df5_prot_PTM[df5_prot_PTM["accession"].notna()]
     df5_prot_PTM = df5_prot_PTM.sort_values(by=["count_of_peptides_delta"], ascending=False)
     df5_prot_PTM = df5_prot_PTM[df5_prot_PTM["count_of_peptides_delta"].notna()]
@@ -118,13 +119,11 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
     sns.set(font_scale=2.5)
     sns.set_style({"grid.color": ".1", "grid.linestyle": ":"})
     plt.subplot(1, 1, 1)
-    # Coverage of standard\n and PTM searches | Покрытие стандартного\nи PTM поисков
     sns.barplot(data=df5_prot_PTM[0:10], y='Protein_Name', x="coverage_%_PTM", color="#f28e29",
                 label="Coverage of standard\nand PTM searches", edgecolor="black", linewidth=0.9)
     plt.legend(bbox_to_anchor=(0.60, 0.25), loc='upper left')
 
     plt.subplot(1, 1, 1)
-    # Standard search\ncoverage | Покрытие стандартного\nпоиска
     sns.barplot(data=df5_prot_PTM[0:10], y="Protein_Name", x="coverage_%_FS", color="#b51816",
                 label="Standard search\ncoverage", edgecolor="black", linewidth=0.9)
     plt.legend(bbox_to_anchor=(0.60, 0.25), loc='upper left')
@@ -143,14 +142,14 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
 
     filtered_msms_PTM_psms = filtered_msms_PTM.drop_duplicates(subset=[elm for elm in list(filtered_msms_PTM.columns) if elm != 'accession_of_protein'], keep='first')
 
-    '''Число PSM найденных по каждой модификации'''
+    ''' The number of PSMs found for each modification '''
     plt.figure(figsize=(10, 10))
     sns.set(font_scale=1)
     sns.set_style({"grid.color": ".6", "grid.linestyle": ":"})
     sns.countplot(data=filtered_msms_PTM_psms, y='Search', hue='Search', edgecolor="black", linewidth=0.9,
                   order=filtered_msms_PTM_psms['Search'].value_counts().index)
-    plt.xlabel("Number of modified PSMs")  # Number of modified PSMs | Число PSM с PTM
-    plt.ylabel("")  # Modifications | Модификации
+    plt.xlabel("Number of modified PSMs")
+    plt.ylabel("")
     plt.savefig(fdr_analysis_dir / f"{config.experiment_name}_number_of_modified_PSMs.png", dpi=100,
                 bbox_inches='tight')
     filtered_msms_PTM_psms['Search'].value_counts(sort=True).to_excel(fdr_analysis_dir / f'{config.experiment_name}_number_of_modified_PSMs_all.xlsx', index=True,
@@ -162,7 +161,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
         index=True, header=True)
 
     # ------------------------------------------------------------------------------------------------------------------
-    ''' Число пептидов найденных по каждой модификации '''
+    ''' The number of peptides found for each modification '''
     filtered_msms_PTM_peptides = filtered_msms_PTM.drop_duplicates(
         subset=['accession_of_protein', 'modified_peptide', 'Search'], keep='first')
     plt.figure(figsize=(10, 10))
@@ -170,8 +169,8 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
     sns.set_style({"grid.color": ".6", "grid.linestyle": ":"})
     sns.countplot(data=filtered_msms_PTM_peptides, y='Search', hue='Search', edgecolor="black", linewidth=0.9,
                   order=filtered_msms_PTM_peptides['Search'].value_counts().index)
-    plt.xlabel("Number of modified peptides")  # Number of modified peptides | Число модифицированных пептидов
-    plt.ylabel("")  # Modifications | Модификации
+    plt.xlabel("Number of modified peptides")
+    plt.ylabel("")
     plt.savefig(fdr_analysis_dir / f"{config.experiment_name}_number_of_modified_peptides.png", dpi=100,
                 bbox_inches='tight')
     filtered_msms_PTM_peptides['Search'].value_counts(sort=True).to_excel(fdr_analysis_dir / f'{config.experiment_name}_number_of_modified_peptides_all.xlsx',
@@ -181,7 +180,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
     Number_of_modified_peptides.to_excel(fdr_analysis_dir / f'{config.experiment_name}_list_of_modified_peptides_{config.analysis_index}.xlsx', index=True, header=True)
 
     # ------------------------------------------------------------------------------------------------------------------
-    '''Число белков найденных по каждой модификации'''
+    ''' The number of proteins found for each modification '''
     filtered_msms_PTM_proteins = filtered_msms_PTM.drop_duplicates(subset=['Search', 'accession_of_protein'],
                                                                    keep='first')
     plt.figure(figsize=(10, 10))
@@ -189,8 +188,8 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
     sns.set_style({"grid.color": ".6", "grid.linestyle": ":"})
     sns.countplot(data=filtered_msms_PTM_proteins, y='Search', hue='Search', edgecolor="black", linewidth=0.9,
                   order=filtered_msms_PTM_proteins['Search'].value_counts().index)
-    plt.xlabel("Count of modified proteins")  # Count of modified proteins | Число модифицированных белков
-    plt.ylabel("")  # Modifications | Модификации
+    plt.xlabel("Count of modified proteins")
+    plt.ylabel("")
     plt.savefig(fdr_analysis_dir / f"{config.experiment_name}_number_of_modified_proteins.png", dpi=100,
                 bbox_inches='tight')
     filtered_msms_PTM_proteins['Search'].value_counts(sort=True).to_excel(fdr_analysis_dir / f'{config.experiment_name}_number_of_modified_proteins_{config.analysis_index}.xlsx',
@@ -200,19 +199,19 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
     Number_of_modified_proteins.to_excel(fdr_analysis_dir / f'{config.experiment_name}_list_of_modified_proteins_{config.analysis_index}.xlsx', index=True, header=True)
 
     # ------------------------------------------------------------------------------------------------------------------
-    ''' Сохранение информации по результату поиска PTM '''
+    ''' Saving information based on the PTM search result '''
     with open(fdr_analysis_dir / f'{config.experiment_name}_result_info.txt', 'w', encoding="utf-8") as file:
         FS_mean_coverage = df5_prot_PTM['coverage_%_FS'].mean()
-        file.write(f'Среднее покрытие белков в стандартном поиске: {FS_mean_coverage} %\n')
+        file.write(f'Average protein coverage in the standard search: {FS_mean_coverage} %\n')
         PTM_mean_coverage = df5_prot_PTM['coverage_%_PTM'].mean()
-        file.write(f'Среднее покрытие белков в стандартном поиске и поиске PTM: {PTM_mean_coverage} %\n\n')
+        file.write(f'Average protein coverage in standard search and PTM search: {PTM_mean_coverage} %\n\n')
 
-        file.write(f'Количество PSM, для которых были найдены PTM: {filtered_msms_PTM.shape[0]}\n')
-        file.write(f'Количество белков, для которых были найдены PTM: {df5_prot_PTM.shape[0]}\n')
-        file.write(f'Количество пептидов, для которых были найдены PTM: {filtered_msms_PTM_peptides.shape[0]}\n\n')
+        file.write(f'The number of PSMs for which PTMs were found: {filtered_msms_PTM.shape[0]}\n')
+        file.write(f'The number of peptides for which PTMs were found: {filtered_msms_PTM_peptides.shape[0]}\n')
+        file.write(f'The number of proteins for which PTMs were found: {df5_prot_PTM.shape[0]}\n\n')
 
         number_of_identified_PTMs = len(list(set(filtered_msms_PTM['Search'])))
-        file.write(f'Количество PTM, с которыми были идентифицированы пептиды белков: {number_of_identified_PTMs}\n\n')
+        file.write(f'The number of PTMs with which peptides have been identified: {number_of_identified_PTMs}\n\n')
         list_of_identified_PTMs = '\n'.join(map(str, list(set(filtered_msms_PTM['Search']))))
         file.write(list_of_identified_PTMs)
     # ------------------------------------------------------------------------------------------------------------------
@@ -221,7 +220,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
 
     df_locations_of_PTMs = df_locations_of_PTMs.drop_duplicates(subset=['file_name', 'spectrum', 'accession_of_protein', 'modified_peptide', 'peptide', 'modifications', 'Search'], keep='first')
 
-    ''' Создание колонки с позициями модифицированных аминокислот в идентифицированных пептидах '''
+    ''' Creating a column with positions of modified amino acids in identified peptides '''
     positions_list = []
     for ptm_location in df_locations_of_PTMs['modifications']:
         ptm_location = ptm_location[2:-2].split("', '")
@@ -231,7 +230,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
 
     df_locations_of_PTMs = df_locations_of_PTMs.query('PTM_positions != ""')
 
-    ''' Создание словаря с информацией для каждого белка по каждому модифицированному пептиду '''
+    ''' Creating a dictionary with information for each protein for each modified peptide '''
     dict_of_locations_of_PTMs = {}
     for index, row in df_locations_of_PTMs.iterrows():
         if row['accession_of_protein'] not in dict_of_locations_of_PTMs.keys():
@@ -243,14 +242,14 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
                                                                     row['Search'], row['modified_peptide'],
                                                                     row['file_name'], row['spectrum']]]
 
-    ''' Создание словарей последовательностей и названий белков '''
+    ''' Creating dictionaries of protein sequences and names '''
     dict_of_full_sequences = {}
     dict_of_prot_names = {}
     for protein0 in tqdm(dict_of_locations_of_PTMs.keys()):
         dict_of_full_sequences[protein0] = get_protein_sequence(protein0)
         dict_of_prot_names[protein0] = get_protein_name(protein0)
 
-    ''' Словарь с укороченными названиями модификаций '''
+    ''' Dictionary with short modifications names '''
     module_dir = Path(__file__).parent.parent.resolve()
     with open(module_dir / 'data' / f"ptm_name_to_config_ptm_name_dict.json", "r") as ptm_name_to_config_ptm_name_file:
         ptm_name_to_config_ptm_name_dict_json = ptm_name_to_config_ptm_name_file.read()

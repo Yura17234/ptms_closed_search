@@ -7,7 +7,8 @@ logger = logging.getLogger("aggregate_results")
 
 from ptm_search.postprocessing.fdr_filtration import (
     threshold_calculation_separate_fdr,
-    threshold_calculation_transferred_fdr)
+    threshold_calculation_transferred_fdr,
+    threshold_calculation_transferred_fdr_linear_reg)
 
 from ptm_search.postprocessing.analysis_of_result import get_plots_from_result_of_analysis
 
@@ -47,6 +48,12 @@ def calculate_threshold(decoys: pd.DataFrame, targets: pd.DataFrame, config, ptm
             targets[['PTM', 'rank']],
             ratio_info_dir,
             ptm_name)
+    elif config.fdr_strategy == 'transferred_fdr_linear_reg':
+        return threshold_calculation_transferred_fdr_linear_reg(
+            decoys[['PTM', 'rank']],
+            targets[['PTM', 'rank']],
+            ratio_info_dir,
+            ptm_name)
     else:
         return threshold_calculation_separate_fdr(
             decoys[['PTM', 'rank']],
@@ -65,8 +72,6 @@ def aggregate_results(config) -> NoReturn:
     if not fdr_result_file_path.exists():
         ratio_info_dir = config.ptm_search_dir / f'ratio_info_of_filtration_{config.search_mode}_{config.fdr_strategy}'
         ratio_info_dir.mkdir(exist_ok=True)
-        # log_file_path = log_dir / 'log_filtration_info.txt'
-        # log_file = open(log_file_path, 'w')
 
         ss_psms = pd.read_csv(config.st_search_dir / 'union_PSMs_full.tsv', sep='\t')
         ss_psms['Search'] = 'Standard search'
@@ -93,7 +98,7 @@ def aggregate_results(config) -> NoReturn:
             ptm_df['PTM'] = '+'
 
             full_df = pd.DataFrame()
-            if config.fdr_strategy == 'transferred_fdr':
+            if config.fdr_strategy == 'transferred_fdr' or config.fdr_strategy == 'transferred_fdr_linear_reg':
                 full_df = pd.concat([ss_psms, ptm_df], ignore_index=True).sort_values('hyperscore')
                 full_df['rank'] = range(1, len(full_df) + 1)
                 target = full_df.query('decoy == False')
@@ -107,26 +112,24 @@ def aggregate_results(config) -> NoReturn:
             try:
                 threshold, q_values = calculate_threshold(decoy, target, config, ptm_name, ratio_info_dir)
             except:
-                logger.error(f'Размер результата анализа после фильтрации по {ptm_name} : {0}')
+                logger.error(f'The size of the analysis result after filtering by {ptm_name} : {0}')
                 continue
 
-            if config.fdr_strategy == 'transferred_fdr':
+            if config.fdr_strategy == 'transferred_fdr' or config.fdr_strategy == 'transferred_fdr_linear_reg':
                 ptm_df = full_df.query(f'PTM == "+" & rank >= {threshold}')
             else:
                 ptm_df = ptm_df.query(f'rank >= {threshold}')
 
             for rank_val, q_val in sorted(q_values.items()):
                 ptm_df.loc[ptm_df['rank'] > rank_val, 'q_value'] = q_val
-            logger.info(f'Размер результата анализа после фильтрации по {ptm_name} : {ptm_df.shape}')
-            # log_file.write(f'Размер результата анализа после фильтрации по {ptm_name} : {ptm_df.shape}\n')
+            logger.info(f'The size of the analysis result after filtering by {ptm_name} : {ptm_df.shape}')
 
             ptm_df['accessions_list'] = ptm_df['protein'].apply(lambda x: '|'.join([p.split('|')[1] for p in ast.literal_eval(x)]))
 
             if config.search_mode == 'fast_search':
                 valid_accs = ptm_uniprot_info_df.query(f'PTM == "{ptm_name}"')['accession'].tolist()
                 ptm_df = clear_ptm_psms(ptm_df, valid_accs)
-                logger.info(f'Размер результата анализа после фильтрации на наличие информации в UniProt по {ptm_name} : {ptm_df.shape}')
-                # log_file.write(f'Размер результата анализа после фильтрации на наличие информации в UniProt по {ptm_name} : {ptm_df.shape}\n\n')
+                logger.info(f'The size of the analysis result after filtering for information in UniProt by {ptm_name} : {ptm_df.shape}')
 
             all_fdr_ptm_psms = pd.concat([all_fdr_ptm_psms, ptm_df], ignore_index=True)
 
@@ -137,7 +140,6 @@ def aggregate_results(config) -> NoReturn:
         all_fdr_ptm_psms.to_csv(fdr_result_file_path, index=False)
 
         logger.info(f'Result dataframe :\n{all_fdr_ptm_psms.shape}')
-        # log_file.close()
     else:
         all_fdr_ptm_psms = pd.read_csv(fdr_result_file_path)
 
