@@ -25,6 +25,8 @@ class Config:
         self.uniprot_query_path = Path(os.path.expanduser(uniprot_query_path)).resolve()
         raw_base_config_path = self._config.get('paths', 'base_config_path')
         self.base_config_path = Path(os.path.expanduser(raw_base_config_path)).resolve()
+        raw_additional_lists_path = self._config.get('paths', 'additional_lists_path')
+        self.additional_lists_path = Path(os.path.expanduser(raw_additional_lists_path)).resolve()
 
         self.ptm_search_dir = self.work_dir / f'{self.experiment_name}_PTM_search'
         self.st_search_dir = self.work_dir / f'{self.experiment_name}_Standard_search'
