@@ -12,7 +12,7 @@ def setup_logger(log_dir, name: str, level=logging.INFO) -> logging.Logger:
     if logger.hasHandlers():
         logger.handlers.clear()
 
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now().strftime('%H%M%S')
     pid = os.getpid()
     log_path = log_dir / f'{name}_{timestamp}_{pid}.log'
 
