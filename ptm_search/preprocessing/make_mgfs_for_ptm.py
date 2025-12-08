@@ -1,7 +1,3 @@
-'''
-    Создание mgf-файлов только с не идентифицированными спектрами для PTM-поиска
-'''
-
 from typing import NoReturn
 import pyteomics.mgf
 import pandas as pd
@@ -10,7 +6,11 @@ from multiprocessing import Pool
 import logging
 logger = logging.getLogger("prepare_ptm_search")
 
-# Информация обо всех и идентифицированных спектрах представляется как глобальные переменные
+'''
+    Creating mgf files only with unidentified spectra for PTM search
+'''
+
+# info about all and identified spectra and getting as global variables
 def init_pool(union_PSMs_df0, mgf_dir0, config0):
     global union_PSMs_df
     union_PSMs_df = union_PSMs_df0
@@ -19,7 +19,7 @@ def init_pool(union_PSMs_df0, mgf_dir0, config0):
     global config
     config = config0
 
-# Осуществление записи списка спектров в новый mgf-файл
+# writing a list of spectra in a new mgf file
 def make_mgf_files_for_ptm(file_name0) -> NoReturn:
 
     dict_mgf0 = pyteomics.mgf.IndexedMGF(str(mgf_dir / f'{file_name0.split(".")[0]}.mgf'))
@@ -47,7 +47,7 @@ def make_mgf_files_for_ptm(file_name0) -> NoReturn:
 
     return file_name0
 
-# Использование параллелизации записи списка спектров в новый mgf-файл
+# using parallelization to write a list of spectra to a new mgf file
 def make_mgf_files_for_ptm_multiprocessing(mgf_files_list0: list[str], union_PSMs_df0: pd.DataFrame, mgf_dir0: str, config0) -> NoReturn:
 
     with Pool(initializer=init_pool, initargs=(union_PSMs_df0, mgf_dir0, config0,), processes=8) as p:
@@ -56,9 +56,9 @@ def make_mgf_files_for_ptm_multiprocessing(mgf_files_list0: list[str], union_PSM
         for filename in results:
             logger.info(f'{filename.split(".")[0]}_for_PTM.mgf --> Done!\n')
 
-# ---------------------/ Открытие необходимых файлов на чтение и запись. Запуск внутренных функций /--------------------
+# -----------------/ Opening the necessary files for reading and writing. Launching internal functions /----------------
 def make_mgfs_for_ptm(mgf_dir: str, config) -> NoReturn:
-    text5 = ' Создание mgf-файлов только с не идентифицированными спектрами для PTM-поиска '
+    text5 = ' Creating mgf files only with unidentified spectra for PTM search '
     number5 = int(round((200 - len(text5)) / 2, 0))
     logger.info(f'\n{text5:.^{number5}}')
     union_PSMs_df = pd.read_csv(config.st_search_dir / 'union_PSMs.tsv', sep='\t')

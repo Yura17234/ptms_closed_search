@@ -1,7 +1,3 @@
-'''
-    Парсер config-фалов конфигурации запуска Identipy
-'''
-
 from typing import NoReturn
 import os
 from pathlib import Path
@@ -15,16 +11,20 @@ logger = logging.getLogger("prepare_ptm_search")
     parse_config_file <-- make_config_files
 '''
 
+'''
+    Parser of config files for Identipy PTM search
+'''
+
 # ---------------------------------------------------/ --- /------------------------------------------------------------
 def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: int) -> NoReturn:
-    logger.info(f'Список всех модификаций:\n{list_of_MOD_RES}\n')
+    logger.info(f'List of all modifications:\n{list_of_MOD_RES}\n')
 
     module_dir = Path(__file__).parent.parent.resolve()
     with open(module_dir / 'data' / 'ptm_name_to_config_ptm_name_dict.json', 'r') as ptm_name_to_config_ptm_name_file:
         ptm_name_to_config_ptm_name_dict_json = ptm_name_to_config_ptm_name_file.read()
     dict_of_modifications = json.loads(ptm_name_to_config_ptm_name_dict_json)
 
-    # Config-файл с параметрами стандартного запуска identipy
+    # config file with parameters of the identipy standard search
     st_search_config = configparser.ConfigParser()
     st_search_config.sections()
     st_search_config.read(config.base_config_path)
@@ -48,23 +48,23 @@ def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: in
             count += 1
             continue
 
-        # Config-файл для PTM поиска
+        # config file for PTM search
         updater = ConfigUpdater()
         updater.read(module_dir / 'configs' / f'PTM_default.cfg')
 
-        # Добавляем название модификации, которое поймет Identipy
+        # adding modification name for identity
         if st_search_config["modifications"]["variable"] == '':
             updater["modifications"]["variable"].value = mification_name_for_Identipy
         elif st_search_config["modifications"]["variable"] != '':
             updater["modifications"]["variable"].value = f'{st_search_config["modifications"]["variable"]}, {mification_name_for_Identipy}'
 
-        if variant_of_search_ == 1: # Добавление полного пути к полной базе данных поиска
+        if variant_of_search_ == 1:  # adding full path to the full search database
             updater["input"]["database"].value = f'{str(config.ptm_search_dir)}/{config.experiment_name}_PTMs_search_{config.analysis_index}_reverse.fasta'
-        elif variant_of_search_ == 2: # Добавление полного пути к малым базам данных поиска
+        elif variant_of_search_ == 2:  # adding full path to the small search database
             modif_for_fasta = modif.replace(' ', '_').replace(';', '').replace('/', '_')
             updater["input"]["database"].value = f'{str(config.ptm_search_dir)}/{config.analysis_index}_fasta_for_fast_search/{modif_for_fasta}_{config.analysis_index}_reverse.fasta'
 
-        # Перенос остальных параметров стандартного поиска
+        # transferring remaining parameters of the standard search
         updater["search"]["number of missed cleavages"].value = st_search_config["search"]["number of missed cleavages"]
 
         updater["performance"]["processes"].value = st_search_config["performance"]["processes"]
@@ -75,7 +75,7 @@ def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: in
         updater["search"]["product accuracy unit"].value = st_search_config["search"]["product accuracy unit"]
         updater["search"]["product accuracy"].value = st_search_config["search"]["product accuracy"]
 
-        # Сохранение config-файла
+        # saving the config file
         modif2 = modif.replace(' ', '_').replace(';', '').replace('/', '_')
         if variant_of_search_ == 1:
             with open(configs_full_search_dir / f'{modif2}_{config.analysis_index}.cfg', 'w') as file:
@@ -86,14 +86,14 @@ def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: in
 
     f2 = set(f)
     f2 = [i for i in f2 if i not in dict_of_modifications.keys()]
-    logger.info(f'Список модификаций не из словаря:\n{f2}\n')
+    logger.info(f'The list of modifications is not from the dictionary:\n{f2}\n')
     logger.info(f'{len(f2)} {len(f)}')
-    logger.info(f'Число неправильно прописанных для Identipy модификаций: {count}')
-    logger.info(f'Число модификаций {len(list_of_MOD_RES)}')
+    logger.info(f'The number of modifications incorrectly registered for Identipy: {count}')
+    logger.info(f'Number of modifications {len(list_of_MOD_RES)}')
 
-# ---------------------/ Открытие необходимых файлов на чтение и запись. Запуск внутренных функций /--------------------
+# -----------------/ Opening the necessary files for reading and writing. Launching internal functions /----------------
 def parse_config_file(list_of_MOD_RES_: list[str], config, variant_of_search: int) -> NoReturn:
-    text4 = ' Создание конфигурационных файлов для поиска PTM '
+    text4 = ' Creating configuration files for PTM search '
     number4 = int(round((200 - len(text4)) / 2, 0))
     logger.info(f'{text4:.^{number4}}')
     make_config_files(list_of_MOD_RES_, config, variant_of_search)
