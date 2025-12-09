@@ -48,9 +48,8 @@ def prepare_ptm_search(config) -> NoReturn:
     logger.info(f'The number of proteins from the standard initial search: {len(list(acc_to_names_dict.keys()))}')
     grouped_prots_by_ptms_dict = adding_ptm_info_from_db_ptm(grouped_prots_by_ptms_dict, list(acc_to_names_dict.keys()))
 
-    if config.additional_lists_path is None or config.additional_lists_path == "":
-        grouped_prots_by_ptms_dict = adding_ptm_info_from_additional_lists(grouped_prots_by_ptms_dict,
-                                                                 list(acc_to_names_dict.keys()), config)
+    if '.txt' in str(config.additional_lists_path):
+        grouped_prots_by_ptms_dict = adding_ptm_info_from_additional_lists(grouped_prots_by_ptms_dict, list(acc_to_names_dict.keys()), config)
 
     ''' 2 '''
     ptm_info_df = make_ptms_df(grouped_prots_by_ptms_dict, acc_to_names_dict, config)
