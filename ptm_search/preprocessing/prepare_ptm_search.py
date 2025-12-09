@@ -28,6 +28,10 @@ def prepare_ptm_search(config) -> NoReturn:
 
     for ext in ['*.mgf', '*.tsv', '*.pep.xml', '*.png']:
         for file in glob.glob(str(config.work_dir / ext)):
+            file_name = os.path.basename(file)
+            if '_for_PTM.mgf' in file_name:
+                continue
+
             dest = mgf_dir if ext == '*.mgf' else config.st_search_dir
             shutil.move(file, dest)
 
