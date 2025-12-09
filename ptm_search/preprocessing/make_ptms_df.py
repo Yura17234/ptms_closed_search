@@ -31,8 +31,12 @@ def make_df_of_PTMs(group_by_mod_res: dict[str, dict[str, list[str]]], dict_acc_
 
         for protein in group_by_mod_res[modification].keys():
 
-            df4.loc[len(df4)] = [protein, dict_acc_to_names[protein], modification, '|'.join(map(str, group_by_mod_res[modification][protein] ))]
-            grouped_modres_file.write(f'{protein}|{dict_acc_to_names[protein]}' + '\n')
+            try:
+                df4.loc[len(df4)] = [protein, dict_acc_to_names[protein], modification, '|'.join(map(str, group_by_mod_res[modification][protein] ))]
+                grouped_modres_file.write(f'{protein}|{dict_acc_to_names[protein]}' + '\n')
+            except:
+                df4.loc[len(df4)] = [protein, 'protein from additional ptm lists', modification, '|'.join(map(str, group_by_mod_res[modification][protein]))]
+                grouped_modres_file.write(f'{protein}| protein from additional ptm lists' + '\n')
 
     grouped_modres_file.close()
     df4.to_csv(config.ptm_search_dir / f'{config.experiment_name}_PTM_info_from_UniProt_{config.analysis_index}.csv', encoding='utf-8')
