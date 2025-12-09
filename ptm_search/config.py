@@ -25,9 +25,8 @@ class Config:
         self.uniprot_query_path = Path(os.path.expanduser(uniprot_query_path)).resolve()
         raw_base_config_path = self._config.get('paths', 'base_config_path')
         self.base_config_path = Path(os.path.expanduser(raw_base_config_path)).resolve()
-        additional_lists_path_val = self._config.get('paths', 'additional_lists_path')
-        if additional_lists_path_val is None or additional_lists_path_val == "":
-            self.additional_lists_path = additional_lists_path_val
+        if self._config.get('paths', 'additional_lists_path') == '/':
+            self.additional_lists_path = '/'
         else:
             raw_additional_lists_path = self._config.get('paths', 'additional_lists_path')
             self.additional_lists_path = Path(os.path.expanduser(raw_additional_lists_path)).resolve()
