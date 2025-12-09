@@ -55,6 +55,8 @@ def adding_ptm_info_from_additional_lists(dict_of_grouped_by_ptms_proteins_add_l
     number1_3 = int(round((200 - len(text1_3)) / 2, 0))
     logger.info(f'\n{text1_3:.^{number1_3}}\n')
 
+    logger.info('\n'.join(map(str,[f'{ptm_key} -- {len(dict_of_proteins_by_ptms_from_add_lists[ptm_key].keys())}' for ptm_key in dict_of_proteins_by_ptms_from_add_lists.keys()])))
+
     dict_of_grouped_by_ptms_proteins_add_lists = merge_dicts(dict_of_grouped_by_ptms_proteins_add_lists, dict_of_proteins_by_ptms_from_add_lists, proteins_from_msms_add_lists)
 
     return dict_of_grouped_by_ptms_proteins_add_lists

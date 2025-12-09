@@ -46,7 +46,7 @@ def prepare_ptm_search(config) -> NoReturn:
 
     if config.additional_lists_path != '':
         grouped_prots_by_ptms_dict = adding_ptm_info_from_additional_lists(grouped_prots_by_ptms_dict,
-                                                                 list(acc_to_names_dict.keys()))
+                                                                 list(acc_to_names_dict.keys()), config)
 
     ''' 2 '''
     ptm_info_df = make_ptms_df(grouped_prots_by_ptms_dict, acc_to_names_dict, config)
