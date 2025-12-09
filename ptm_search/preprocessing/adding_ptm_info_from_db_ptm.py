@@ -5,13 +5,13 @@ from pathlib import Path
 import logging
 logger = logging.getLogger("prepare_ptm_search")
 
-def merge_dicts(dict_of_grouped_by_ptms_proteins, dict_of_proteins_by_ptms_additional, proteins_from_msms) -> dict[str, dict[str, list[str]]]:
+def merge_dicts(dict_of_grouped_by_ptms_proteins, dict_of_proteins_by_ptms_additional, proteins_from_msms, flag) -> dict[str, dict[str, list[str]]]:
 
     for ptm_name in tqdm(list(dict_of_grouped_by_ptms_proteins.keys()) + ['Ubiquitinlysine', 'Sumoyllysine']):
         if ptm_name not in dict_of_proteins_by_ptms_additional.keys():
             continue
         for protein_with_ptm in dict_of_proteins_by_ptms_additional[ptm_name].keys():
-            if protein_with_ptm not in proteins_from_msms:
+            if protein_with_ptm not in proteins_from_msms and flag == 'db_ptm':
                 continue
             if ptm_name not in dict_of_grouped_by_ptms_proteins.keys():
                 dict_of_grouped_by_ptms_proteins[ptm_name] = {}
@@ -35,7 +35,7 @@ def adding_ptm_info_from_db_ptm(dict_of_grouped_by_ptms_proteins_dbptm: dict[str
     logger.info(f'\n{text1_2:.^{number1_2}}\n')
     logger.info('\n'.join(map(str, [f'{ptm_key} -- {len(dict_of_grouped_by_ptms_proteins_dbptm[ptm_key].keys())}' for ptm_key in dict_of_grouped_by_ptms_proteins_dbptm.keys()])))
 
-    dict_of_grouped_by_ptms_proteins_dbptm = merge_dicts(dict_of_grouped_by_ptms_proteins_dbptm, dict_of_proteins_by_ptms_from_dbptm, proteins_from_msms_dbptm)
+    dict_of_grouped_by_ptms_proteins_dbptm = merge_dicts(dict_of_grouped_by_ptms_proteins_dbptm, dict_of_proteins_by_ptms_from_dbptm, proteins_from_msms_dbptm, 'db_ptm')
 
     logger.info('\n'.join(map(str, [f'{ptm_key} -- {len(dict_of_grouped_by_ptms_proteins_dbptm[ptm_key].keys())}' for ptm_key in dict_of_grouped_by_ptms_proteins_dbptm.keys()])))
 
@@ -57,6 +57,6 @@ def adding_ptm_info_from_additional_lists(dict_of_grouped_by_ptms_proteins_add_l
 
     logger.info('\n'.join(map(str,[f'{ptm_key} -- {len(dict_of_proteins_by_ptms_from_add_lists[ptm_key].keys())}' for ptm_key in dict_of_proteins_by_ptms_from_add_lists.keys()])))
 
-    dict_of_grouped_by_ptms_proteins_add_lists = merge_dicts(dict_of_grouped_by_ptms_proteins_add_lists, dict_of_proteins_by_ptms_from_add_lists, proteins_from_msms_add_lists)
+    dict_of_grouped_by_ptms_proteins_add_lists = merge_dicts(dict_of_grouped_by_ptms_proteins_add_lists, dict_of_proteins_by_ptms_from_add_lists, proteins_from_msms_add_lists, 'add_lists')
 
     return dict_of_grouped_by_ptms_proteins_add_lists
