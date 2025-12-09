@@ -72,5 +72,7 @@ def prepare_ptm_search(config) -> NoReturn:
 
     ''' 5 '''
     # creating .mgf files from unidentified spectra for PTM searches
-    if all(['_for_PTM.mgf' not in file for file in os.listdir(f'{config.ptm_search_dir}')]):
+    if any(['_for_PTM.mgf' in file for file in os.listdir(f'{config.ptm_search_dir}')]):
+        pass
+    else:
         make_mgfs_for_ptm(mgf_dir, config)
