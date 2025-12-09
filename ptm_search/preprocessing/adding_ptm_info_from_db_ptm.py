@@ -47,7 +47,7 @@ def adding_ptm_info_from_additional_lists(dict_of_grouped_by_ptms_proteins_add_l
     logger.info(config.additional_lists_path)
 
     dict_of_proteins_by_ptms_from_add_lists = {}
-    for ptm_add in additional_lists_text.split('>'):
+    for ptm_add in additional_lists_text.split('>')[1:]:
         ptm_list = ptm_add.split('\n')
         dict_of_proteins_by_ptms_from_add_lists[ptm_list[0]] = dict.fromkeys(ptm_list[1:], [])
 
