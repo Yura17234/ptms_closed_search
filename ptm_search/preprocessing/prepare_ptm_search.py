@@ -50,6 +50,7 @@ def prepare_ptm_search(config) -> NoReturn:
 
     # logger.info(f'{str(config.additional_lists_path)} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
     if '/' != str(config.additional_lists_path).strip():
+        print('/' != str(config.additional_lists_path).strip(), str(config.additional_lists_path).strip())
         grouped_prots_by_ptms_dict = adding_ptm_info_from_additional_lists(grouped_prots_by_ptms_dict, list(acc_to_names_dict.keys()), config)
 
     ''' 2 '''
