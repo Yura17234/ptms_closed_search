@@ -21,14 +21,14 @@ def init_pool(union_PSMs_df0, mgf_dir0, config0):
 
 # writing a list of spectra in a new mgf file
 def make_mgf_files_for_ptm(file_name0) -> NoReturn:
-
-    dict_mgf0 = pyteomics.mgf.IndexedMGF(str(mgf_dir / f'{file_name0.split(".")[0]}.mgf'))
-    temporary_spectra_list0 = union_PSMs_df.query(f'file == "{file_name0.split(".")[0]}.pep.xml"')['spectrum']
+    fname = file_name0.split(".")[0]
+    mgf_file = pyteomics.mgf.MGF(str(mgf_dir / f'{fname}.mgf'))
+    temporary_spectra_set = set(union_PSMs_df[union_PSMs_df['file'] == f'{fname}.pep.xml']['spectrum'])
 
     outmgf = open(config.work_dir / f'{file_name0.split(".")[0]}_for_PTM.mgf', 'w')
-    for spectrum in dict_mgf0:
+    for spectrum in mgf_file:
 
-        if spectrum['params']['title'] not in list(temporary_spectra_list0):
+        if spectrum['params']['title'] not in list(temporary_spectra_set):
 
             outmgf.write('BEGIN IONS\n')
             outmgf.write('TITLE=%s\n' % (spectrum['params']['title']))
@@ -61,6 +61,7 @@ def make_mgfs_for_ptm(mgf_dir: str, config) -> NoReturn:
     text5 = ' Creating mgf files only with unidentified spectra for PTM search '
     number5 = int(round((200 - len(text5)) / 2, 0))
     logger.info(f'\n{text5:.^{number5}}')
-    union_PSMs_df = pd.read_csv(config.st_search_dir / 'union_PSMs.tsv', sep='\t')
+    union_PSMs_df = pd.read_csv(config.st_search_dir / 'union_PSMs.tsv', sep='\t',
+                                   usecols=['file', 'spectrum'], dtype={'file': str, 'spectrum': str})
     mgf_files_list = [file for file in os.listdir(mgf_dir) if '.mgf' in file]
     make_mgf_files_for_ptm_multiprocessing(mgf_files_list, union_PSMs_df, mgf_dir, config)

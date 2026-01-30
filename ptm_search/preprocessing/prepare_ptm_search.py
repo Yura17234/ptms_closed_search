@@ -7,7 +7,7 @@ import shutil
 import logging
 logger = logging.getLogger("prepare_ptm_search")
 
-from ptm_search.preprocessing.parsing_human_proteom import parsing_human_proteom
+from ptm_search.preprocessing.parsing_proteom_query import parsing_proteom_query
 from ptm_search.preprocessing.adding_ptm_info_from_db_ptm import adding_ptm_info_from_db_ptm
 from ptm_search.preprocessing.adding_ptm_info_from_db_ptm import adding_ptm_info_from_additional_lists
 from ptm_search.preprocessing.make_ptms_df import make_ptms_df
@@ -35,21 +35,23 @@ def prepare_ptm_search(config) -> NoReturn:
             dest = mgf_dir if ext == '*.mgf' else config.st_search_dir
             shutil.move(file, dest)
 
-    st_search_df = pd.read_csv(config.st_search_dir / f"union_proteins.tsv", sep='\t')
+    st_search_df = pd.read_csv(config.st_search_dir / f"union_proteins.tsv", sep='\t',
+                               usecols=['dbname'], dtype={'dbname': str})
     if st_search_df.shape[0] > 10000:
-        st_search_df = pd.read_csv(config.st_search_dir / f"union_protein_groups.tsv", sep='\t')
+        st_search_df = pd.read_csv(config.st_search_dir / f"union_protein_groups.tsv", sep='\t',
+                                   usecols=['dbname'], dtype={'dbname': str})
         logger.info(f"using: union_protein_groups.tsv\nfrom {str(config.st_search_dir)}")
     else:
         logger.info(f"using: union_proteins.tsv\nfrom {str(config.st_search_dir)}")
 
     ''' 1 '''
-    grouped_prots_by_ptms_dict, acc_to_names_dict = parsing_human_proteom(config, st_search_df)
+    grouped_prots_by_ptms_dict, acc_to_names_dict = parsing_proteom_query(config, st_search_df)
 
     logger.info(f'The number of proteins from the standard initial search: {len(list(acc_to_names_dict.keys()))}')
-    grouped_prots_by_ptms_dict = adding_ptm_info_from_db_ptm(grouped_prots_by_ptms_dict, list(acc_to_names_dict.keys()))
+    grouped_prots_by_ptms_dict = adding_ptm_info_from_db_ptm(grouped_prots_by_ptms_dict, set(acc_to_names_dict.keys()))
 
     if '/' != str(config.additional_lists_path).strip():
-        grouped_prots_by_ptms_dict = adding_ptm_info_from_additional_lists(grouped_prots_by_ptms_dict, list(acc_to_names_dict.keys()), config)
+        grouped_prots_by_ptms_dict = adding_ptm_info_from_additional_lists(grouped_prots_by_ptms_dict, set(acc_to_names_dict.keys()), config)
 
     ''' 2 '''
     ptm_info_df = make_ptms_df(grouped_prots_by_ptms_dict, acc_to_names_dict, config)
@@ -66,7 +68,7 @@ def prepare_ptm_search(config) -> NoReturn:
 
     ''' 3 '''
     with open(config.fasta_path, 'r') as fasta_file:
-        make_fasta_file_for_searches(list(ptm_info_df['accession'].unique()), grouped_prots_by_ptms_dict, fasta_file, config)
+        make_fasta_file_for_searches(set(ptm_info_df['accession'].unique()), grouped_prots_by_ptms_dict, fasta_file, config)
 
     ''' 4 '''
     ptm_list = list(ptm_info_df['PTM'].unique())
@@ -75,7 +77,13 @@ def prepare_ptm_search(config) -> NoReturn:
 
     ''' 5 '''
     # creating .mgf files from unidentified spectra for PTM searches
-    if any(['_for_PTM.mgf' in file for file in os.listdir(f'{config.ptm_search_dir}')]):
-        pass
-    else:
+    full_mgfs = [p.stem for p in (mgf_dir).iterdir() if p.is_file() and p.suffix == '.mgf']
+    ptm_mgfs = {p.name for p in (config.ptm_search_dir).iterdir() if p.is_file()}
+
+    missing = [stem for stem in full_mgfs if f"{stem}_for_PTM.mgf" not in ptm_mgfs]
+
+    if missing:
+        logger.info(f'missing PTM mgf files for: {missing[:10]}{"..." if len(missing) > 10 else ""}')
         make_mgfs_for_ptm(mgf_dir, config)
+    else:
+        logger.info('all *_for_PTM.mgf files already exist. skipping generation.')

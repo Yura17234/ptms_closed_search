@@ -21,16 +21,15 @@ def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: in
 
     module_dir = Path(__file__).parent.parent.resolve()
     with open(module_dir / 'data' / 'ptm_name_to_config_ptm_name_dict.json', 'r') as ptm_name_to_config_ptm_name_file:
-        ptm_name_to_config_ptm_name_dict_json = ptm_name_to_config_ptm_name_file.read()
-    dict_of_modifications = json.loads(ptm_name_to_config_ptm_name_dict_json)
+        dict_of_modifications = json.load(ptm_name_to_config_ptm_name_file)
 
     # config file with parameters of the identipy standard search
     st_search_config = configparser.ConfigParser()
     st_search_config.sections()
     st_search_config.read(config.base_config_path)
 
-    configs_full_search_dir = '_'
-    configs_fast_search_dir = '_'
+    configs_full_search_dir = None
+    configs_fast_search_dir = None
     if variant_of_search_ == 1:
         configs_full_search_dir = config.ptm_search_dir / f'{config.analysis_index}_Configs_full_search'
         os.makedirs(configs_full_search_dir, exist_ok=True)
@@ -38,14 +37,14 @@ def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: in
         configs_fast_search_dir = config.ptm_search_dir / f'{config.analysis_index}_Configs_fast_search'
         os.makedirs(configs_fast_search_dir, exist_ok=True)
 
-    f = []
-    count = 0
+    f, missing_modifs, count = set(), set(), 0
     for modif in list_of_MOD_RES:
-        f.append(modif)
         try:
             mification_name_for_Identipy = dict_of_modifications[modif]
-        except:
+            f.add(modif)
+        except KeyError:
             count += 1
+            missing_modifs.add(modif)
             continue
 
         # config file for PTM search
@@ -84,12 +83,10 @@ def make_config_files(list_of_MOD_RES: list[str], config, variant_of_search_: in
             with open(configs_fast_search_dir / f'{modif2}_{config.analysis_index}.cfg', 'w') as file:
                 file.write(str(updater))
 
-    f2 = set(f)
-    f2 = [i for i in f2 if i not in dict_of_modifications.keys()]
-    logger.info(f'The list of modifications is not from the dictionary:\n{f2}\n')
-    logger.info(f'{len(f2)} {len(f)}')
+    logger.info(f'The list of modifications is not from the dictionary:\n{missing_modifs}\n')
+    logger.info(f'{len(missing_modifs)}')
     logger.info(f'The number of modifications incorrectly registered for Identipy: {count}')
-    logger.info(f'Number of modifications {len(list_of_MOD_RES)}')
+    logger.info(f'Number of modifications {len(f)}')
 
 # -----------------/ Opening the necessary files for reading and writing. Launching internal functions /----------------
 def parse_config_file(list_of_MOD_RES_: list[str], config, variant_of_search: int) -> NoReturn:
