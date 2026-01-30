@@ -26,11 +26,10 @@ def multiple_search(config) -> NoReturn:
             logger.info(f"Pass {mod_name} ({count}/{len(config_files)})")
             continue
 
-        logger.info(f"{'':-^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':-^{50}}")
+        logger.info(f"\n{'':-^{50}}\n{count}/{len(config_files)} | {mod_name}\n{'':-^{50}}\n")
 
         # start identipy
-        # os.system(f'identipy {str(config.work_dir)}/*.mgf -cfg {str(cfg_path)}')
-        mgf_files = [str(mgf) for mgf in list(config.work_dir.glob('*.mgf'))]
+        mgf_files = [str(mgf) for mgf in list(config.work_dir.glob('*_for_PTM.mgf'))]
         identipy_cmd = ["identipy"] + mgf_files + ["-cfg", str(cfg_path)]
 
         try:
@@ -40,12 +39,13 @@ def multiple_search(config) -> NoReturn:
             continue
 
         # collecting the results from .pep.xml files
-        ptm_all_df = pd.DataFrame()
+        ptm_all_dfs = []
         for pepxml_file in config.work_dir.glob("*.pep.xml"):
             file_name = pepxml_file.stem
             df_pep = pepxml.DataFrame(str(pepxml_file))
             df_pep['file_name'] = file_name
-            ptm_all_df = pd.concat([ptm_all_df, df_pep], ignore_index=True)
+            ptm_all_dfs.append(df_pep)
+        ptm_all_df = pd.concat(ptm_all_dfs, ignore_index=True)
 
         # saving the results
         result_csv_path = results_dir / f'{mod_name}_result.csv'
