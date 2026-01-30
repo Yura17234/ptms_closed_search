@@ -1,7 +1,6 @@
 '''
     Get protein name and sequence
 '''
-import os
 import gzip
 import json
 from unipressed import UniprotkbClient
@@ -9,8 +8,7 @@ from pathlib import Path
 
 module_dir = Path(__file__).parent.resolve()
 with open(module_dir / 'data' / 'protein_names_dict.json', 'r', encoding='utf-8') as my_file0:
-    protein_names_dict_json = my_file0.read()
-protein_names_dict = json.loads(protein_names_dict_json)
+    protein_names_dict = json.load(my_file0)
 
 def get_protein_name(accession: str) -> str:
     try:
@@ -26,8 +24,7 @@ def get_protein_name(accession: str) -> str:
 # ----------------------------------------------------------------------------------------------------------------------
 
 with gzip.open(module_dir / 'data' / 'protein_sequences_dict.json.gz', 'rt', encoding='utf-8') as my_file1:
-    protein_sequences_dict_json = my_file1.read()
-protein_sequences_dict = json.loads(protein_sequences_dict_json)
+    protein_sequences_dict = json.load(my_file1)
 
 def get_protein_sequence(accession1: str) -> str:
     try:
@@ -39,5 +36,3 @@ def get_protein_sequence(accession1: str) -> str:
             return f"{dict_query1['sequence']['value']}"
         except:
             return 'Sequence not found !'
-
-# ----------------------------------------------------------------------------------------------------------------------
