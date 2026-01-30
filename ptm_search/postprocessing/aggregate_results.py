@@ -14,32 +14,24 @@ from ptm_search.postprocessing.analysis_of_result import get_plots_from_result_o
 
 pd.options.mode.chained_assignment = None
 
-def clear_ptm_psms(df_psms: pd.DataFrame, list_accs_ptm_info: list[str]) -> pd.DataFrame:
-    acc_was_in_ptm_info = []
-    for list_accs in df_psms['accessions_list']:
-        if any(acc in list_accs_ptm_info for acc in list_accs.split('|')):
-            acc_was_in_ptm_info.append(True)
-        else:
-            acc_was_in_ptm_info.append(False)
+def clear_ptm_psms(df_psms: pd.DataFrame, list_accs_ptm_info: set[str]) -> pd.DataFrame:
+    mask = df_psms["accessions_list"].str.split("|").apply(lambda xs: any(a in list_accs_ptm_info for a in xs))
+    return df_psms.loc[mask].copy()
 
-    df_psms['acc_was_in_ptm_info'] = acc_was_in_ptm_info
-    df_psms = df_psms.query('acc_was_in_ptm_info == True')
-    df_psms = df_psms.drop(columns=['acc_was_in_ptm_info'])
-    return df_psms
+BACKGROUND_MODS = ('160.031@', '147.035@')
+def mark_variable_modifications(modifications_desc: str) -> bool:
+    try:
+        mods = ast.literal_eval(modifications_desc)
+    except Exception:
+        return False
 
-def mark_variable_modifications(modifications_column_PSMs: list[str]) -> list[str]:
-    list_of_markers_of_variable = []
-    for line in modifications_column_PSMs:
-        result = '-'
-        for line2 in line[2:-2].split("', '"):
-            if "160.031@" not in line2 and "147.035@" not in line2:
-                result = '+'
-                break
-        list_of_markers_of_variable.append(result)
-    return list_of_markers_of_variable
+    for mod in mods:
+        if not any(mod.startswith(p) for p in BACKGROUND_MODS):
+            return True
+    return False
 
-def mark_decoys_and_targets(psms_description: list[str]) -> list[bool]:
-    return ["'sp" not in n for n in psms_description]
+def mark_decoys_and_targets(psm_description: str) -> bool:
+    return ("'sp|" not in psm_description) and ("'tr|" not in psm_description)
 
 def calculate_threshold(decoys: pd.DataFrame, targets: pd.DataFrame, config, ptm_name: str, ratio_info_dir: Path) -> tuple[float, dict[float, float]]:
     if config.fdr_strategy == 'transferred_fdr':
@@ -76,26 +68,27 @@ def aggregate_results(config) -> NoReturn:
         ss_psms = pd.read_csv(config.st_search_dir / 'union_PSMs_full.tsv', sep='\t')
         ss_psms['Search'] = 'Standard search'
         ss_psms = ss_psms.query("modifications == '[]'")
-        ss_psms['PTM'] = '-'
-        ss_psms['variable'] = '-'
+        ss_psms['PTM'] = False
+        ss_psms['variable'] = False
 
         ptm_uniprot_info_df = pd.read_csv(config.ptm_search_dir / f"{config.experiment_name}_PTM_info_from_UniProt_{config.analysis_index}.csv")
 
         all_fdr_ptm_psms = pd.DataFrame()
         raw_result_dir = config.ptm_search_dir / f'{config.analysis_index}_result_{config.search_mode}'
-        for index, ptm_file_path in enumerate(raw_result_dir.glob('*_result.csv'), start=1):
+        ptm_files = list(raw_result_dir.glob("*_result.csv"))
+        for index, ptm_file_path in enumerate(ptm_files, start=1):
             ptm_name = ptm_file_path.stem.split(config.analysis_index)[0][:-1].replace('_', ' ')
-            logger.info(f'{index} / {len(list(raw_result_dir.iterdir()))} | {ptm_name}')
+            logger.info(f'{index} / {len(ptm_files)} | {ptm_name}')
             if not ptm_file_path.exists():
                 continue
 
             ptm_df = pd.read_csv(ptm_file_path)
             ptm_df['Search'] = ptm_name
             ptm_df = ptm_df.query("modifications != '[]'")
-            ptm_df['variable'] = mark_variable_modifications(ptm_df['modifications'])
-            ptm_df = ptm_df.query("variable == '+'")
-            ptm_df['decoy'] = mark_decoys_and_targets(ptm_df['protein'])
-            ptm_df['PTM'] = '+'
+            ptm_df['variable'] = ptm_df['modifications'].apply(mark_variable_modifications)
+            ptm_df = ptm_df.query("variable == True")
+            ptm_df['decoy'] = ptm_df['protein'].apply(mark_decoys_and_targets)
+            ptm_df['PTM'] = True
 
             full_df = pd.DataFrame()
             if config.fdr_strategy == 'transferred_fdr' or config.fdr_strategy == 'transferred_fdr_linear_reg':
@@ -116,7 +109,7 @@ def aggregate_results(config) -> NoReturn:
                 continue
 
             if config.fdr_strategy == 'transferred_fdr' or config.fdr_strategy == 'transferred_fdr_linear_reg':
-                ptm_df = full_df.query(f'PTM == "+" & rank >= {threshold}')
+                ptm_df = full_df.query(f'PTM == True & rank >= {threshold}')
             else:
                 ptm_df = ptm_df.query(f'rank >= {threshold}')
 
@@ -127,7 +120,7 @@ def aggregate_results(config) -> NoReturn:
             ptm_df['accessions_list'] = ptm_df['protein'].apply(lambda x: '|'.join([p.split('|')[1] for p in ast.literal_eval(x)]))
 
             if config.search_mode == 'fast_search':
-                valid_accs = ptm_uniprot_info_df.query(f'PTM == "{ptm_name}"')['accession'].tolist()
+                valid_accs = set(ptm_uniprot_info_df.query(f'PTM == "{ptm_name}"')['accession'].unique())
                 ptm_df = clear_ptm_psms(ptm_df, valid_accs)
                 logger.info(f'The size of the analysis result after filtering for information in UniProt by {ptm_name} : {ptm_df.shape}')
 
