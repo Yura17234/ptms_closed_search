@@ -78,7 +78,7 @@ def prepare_ptm_search(config) -> NoReturn:
     ''' 5 '''
     # creating .mgf files from unidentified spectra for PTM searches
     full_mgfs = [p.stem for p in (mgf_dir).iterdir() if p.is_file() and p.suffix == '.mgf']
-    ptm_mgfs = {p.name for p in (config.ptm_search_dir).iterdir() if p.is_file()}
+    ptm_mgfs = {p.name for p in (config.work_dir).iterdir() if p.is_file()}
 
     missing = [stem for stem in full_mgfs if f"{stem}_for_PTM.mgf" not in ptm_mgfs]
 
