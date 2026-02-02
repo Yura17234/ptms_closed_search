@@ -35,11 +35,12 @@ fdr_strategy = transferred_fdr
 # can be transferred_fdr or separate_fdr
 
 [paths]
-work_dir = identipy_work/HEK293
-uniprot_query_path = Query_uniprotkb_proteome_UP000005640_AND_prot_2024_07_27.txt
-fasta_path = UP000005640_9606_reverse.fasta
-base_config_path = identipy_work/edited_default.cfg
-additional_lists_path = identipy_work/HEK293/additional_lists.txt ; or nothing if no additional proteins for ptm search
+work_dir = work_dir
+uniprot_query_path = Query_uniprotkb_proteome_UP000005640_AND_prot_xxxx_xx_xx.txt
+fasta_path = uniprotkb_proteome_UP000005640_AND_revi_xxxx_xx_xx_reverse.fasta
+base_config_path = work_dir/edited_default.cfg
+additional_lists_path = work_dir/additional_lists.txt
+# additional_lists.txt or / if no additional proteins for ptm search
 ```
 
 ```bash
