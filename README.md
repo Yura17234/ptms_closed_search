@@ -62,4 +62,4 @@ Strogov, Y. Y., Spirin, S. A., Ivanov, M. V., Kulebyakina, M. A., Efimenko, A. Y
 PTMs_Closed_Search: Multiple Post-Translational Modification Closed Search Using Reduced Search Space and Transferred FDR.
 Proteomes, 14(1), 7. https://doi.org/10.3390/proteomes14010007
 
-Please cite it when using IdentiPy or its parts.
+Please cite it when using ptms_closed_search or its parts.
