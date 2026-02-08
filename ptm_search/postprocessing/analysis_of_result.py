@@ -106,23 +106,26 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
                         encoding='utf-8', index=False)
     logger.info(f'\n{df5_prot_PTM.head(10)}\n')
 
+    with sns.plotting_context("notebook", font_scale=2.5), sns.axes_style({'grid.color': '.1', 'grid.linestyle': ':'}):
 
-    plt.figure(figsize=(15, 15))
-    sns.set(font_scale=2.5)
-    sns.set_style({'grid.color': '.1', 'grid.linestyle': ':'})
-    plt.subplot(1, 1, 1)
-    sns.barplot(data=df5_prot_PTM[0:10], y='Protein_Name', x='coverage_%_PTM', color='#f28e29',
-                label='Coverage of standard\nand PTM searches', edgecolor='black', linewidth=0.9)
-    plt.legend(bbox_to_anchor=(0.60, 0.25), loc='upper left')
+        fig, ax = plt.subplots(figsize=(15, 15))
+        df_plot = df5_prot_PTM.iloc[:10]
 
-    plt.subplot(1, 1, 1)
-    sns.barplot(data=df5_prot_PTM[0:10], y='Protein_Name', x='coverage_%_FS', color='#b51816',
-                label='Standard search\ncoverage', edgecolor='black', linewidth=0.9)
-    plt.legend(bbox_to_anchor=(0.60, 0.25), loc='upper left')
-    plt.ylabel("")
-    plt.xlabel("Coverage of proteins (%)")
-    plt.savefig(fdr_analysis_dir / f'{config.experiment_name}_increasing_coverage_of_peptides.png',
-                dpi=100, bbox_inches='tight')
+        sns.barplot(data=df_plot, y='Protein_Name', x='coverage_%_PTM', color='#f28e29',
+                    label='Coverage of standard\nand PTM searches',
+                    edgecolor='black', linewidth=0.9, ax=ax)
+
+        sns.barplot(data=df_plot, y='Protein_Name', x='coverage_%_FS', color='#b51816',
+                    label='Standard search\ncoverage',
+                    edgecolor='black', linewidth=0.9, ax=ax)
+
+        ax.set_ylabel("")
+        ax.set_xlabel("Coverage of proteins (%)")
+        ax.legend(bbox_to_anchor=(0.60, 0.25), loc='upper left')
+
+        fig.savefig(fdr_analysis_dir / f'{config.experiment_name}_increasing_coverage_of_peptides.png',
+                    dpi=300, bbox_inches='tight')
+        plt.close(fig)
 
     # ------------------------------------------------------------------------------------------------------------------
     if config.search_mode == 'fast_search':
@@ -143,33 +146,31 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
         subset=['Search', 'accession_of_protein'],
         keep='first')
 
-    fig, axes = plt.subplots(3, 1, figsize=(10, 14))
-    sns.set_context("paper")
-    sns.set(font_scale=0.85)
-    sns.set_style({"grid.color": ".6", "grid.linestyle": ":"})
+    with sns.plotting_context("paper", font_scale=0.85), sns.axes_style({"grid.color": ".6", "grid.linestyle": ":"}):
+        fig, axes = plt.subplots(3, 1, figsize=(10, 14))
+        panels = [
+            (filtered_msms_PTM_psms, "Number of modified PSMs", "A"),
+            (filtered_msms_PTM_peptides, "Number of modified peptides", "B"),
+            (filtered_msms_PTM_proteins, "Number of modified proteins", "C")]
 
-    panels = [
-        (filtered_msms_PTM_psms, "Number of modified PSMs", "A"),
-        (filtered_msms_PTM_peptides, "Number of modified peptides", "B"),
-        (filtered_msms_PTM_proteins, "Number of modified proteins", "C")]
+        for ax, (df_plot, xlabel, letter) in zip(axes, panels):
+            order = df_plot['Search'].value_counts().head(15).index
 
-    for ax, (df_plot, xlabel, letter) in zip(axes, panels):
-        order = df_plot['Search'].value_counts().head(15).index
+            sns.countplot(data=df_plot[df_plot['Search'].isin(order)], y='Search', hue='Search', edgecolor='black',
+                          linewidth=0.9, order=order, ax=ax)
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel('')
+            legend = ax.get_legend()
+            if legend is not None:
+                legend.remove()
 
-        sns.countplot(data=df_plot[df_plot['Search'].isin(order)], y='Search', hue='Search', edgecolor='black',
-                      linewidth=0.9, order=order, ax=ax)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel('')
-        legend = ax.get_legend()
-        if legend is not None:
-            legend.remove()
+            ax.annotate(letter, xy=(-0.20, 1.05), xycoords='axes fraction', fontsize=22, fontweight='bold',
+                        ha='left', va='top')
 
-        ax.annotate(letter, xy=(-0.20, 1.05), xycoords='axes fraction', fontsize=22, fontweight='bold', ha='left', va='top')
-
-    fig.tight_layout()
-    fig.savefig(fdr_analysis_dir / f'{config.experiment_name}_PTM_number_of_modified_PSM_peptides_proteins.png',
-                dpi=300, bbox_inches='tight')
-    plt.close(fig)
+        fig.tight_layout()
+        fig.savefig(fdr_analysis_dir / f'{config.experiment_name}_PTM_number_of_modified_PSM_peptides_proteins.png',
+                    dpi=300, bbox_inches='tight')
+        plt.close(fig)
 
     Number_of_modified_PSMs = filtered_msms_PTM_psms.groupby(['accession_of_protein', 'Protein_Name', 'modified_peptide', 'Search']).size().to_frame('Count')
     Number_of_modified_peptides = filtered_msms_PTM_peptides.groupby(['accession_of_protein', 'Protein_Name', 'Search']).size().to_frame('Count')
