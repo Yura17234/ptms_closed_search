@@ -106,7 +106,8 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
                         encoding='utf-8', index=False)
     logger.info(f'\n{df5_prot_PTM.head(10)}\n')
 
-    with sns.plotting_context("notebook", font_scale=2.5), sns.axes_style({'grid.color': '.1', 'grid.linestyle': ':'}):
+    with sns.plotting_context('paper', font_scale=2.5), sns.axes_style('darkgrid',
+                                                                       {'grid.color': '.1', 'grid.linestyle': ':'}):
 
         fig, ax = plt.subplots(figsize=(15, 15))
         df_plot = df5_prot_PTM.iloc[:10]
@@ -146,7 +147,8 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
         subset=['Search', 'accession_of_protein'],
         keep='first')
 
-    with sns.plotting_context("paper", font_scale=0.85), sns.axes_style({"grid.color": ".6", "grid.linestyle": ":"}):
+    with sns.plotting_context("paper", font_scale=0.85), sns.axes_style('darkgrid',
+                                                                        {"grid.color": ".6", "grid.linestyle": ":"}):
         fig, axes = plt.subplots(3, 1, figsize=(10, 14))
         panels = [
             (filtered_msms_PTM_psms, "Number of modified PSMs", "A"),
