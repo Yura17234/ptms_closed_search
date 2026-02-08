@@ -108,7 +108,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
 
 
     plt.figure(figsize=(15, 15))
-    sns.set(font_scale=2.5)
+    sns.set(font_scale=5)
     sns.set_context("paper")
     sns.set_style({'grid.color': '.1', 'grid.linestyle': ':'})
     plt.subplot(1, 1, 1)
