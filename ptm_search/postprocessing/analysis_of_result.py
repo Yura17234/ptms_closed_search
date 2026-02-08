@@ -109,6 +109,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
 
     plt.figure(figsize=(15, 15))
     sns.set(font_scale=2.5)
+    sns.set_context("paper")
     sns.set_style({'grid.color': '.1', 'grid.linestyle': ':'})
     plt.subplot(1, 1, 1)
     sns.barplot(data=df5_prot_PTM[0:10], y='Protein_Name', x='coverage_%_PTM', color='#f28e29',
@@ -122,7 +123,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
     plt.ylabel("")
     plt.xlabel("Coverage of proteins (%)")
     plt.savefig(fdr_analysis_dir / f'{config.experiment_name}_increasing_coverage_of_peptides.png',
-                dpi=100, bbox_inches='tight')
+                dpi=300, bbox_inches='tight')
 
     # ------------------------------------------------------------------------------------------------------------------
     if config.search_mode == 'fast_search':
@@ -144,7 +145,8 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
         keep='first')
 
     fig, axes = plt.subplots(3, 1, figsize=(10, 14))
-    sns.set(font_scale=1)
+    sns.set_context("paper")
+    sns.set(font_scale=0.85)
     sns.set_style({"grid.color": ".6", "grid.linestyle": ":"})
 
     panels = [
