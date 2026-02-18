@@ -57,7 +57,7 @@ run_aggregate_results --config parameters.cfg
 ---
 # Citation
 
-**ptms_closed_search** is described in this JPR paper:
+**ptms_closed_search** is described in this paper:
 Strogov, Y. Y., Spirin, S. A., Ivanov, M. V., Kulebyakina, M. A., Efimenko, A. Y., & Klychnikov, O. I. (2026).
 PTMs_Closed_Search: Multiple Post-Translational Modification Closed Search Using Reduced Search Space and Transferred FDR.
 Proteomes, 14(1), 7. https://doi.org/10.3390/proteomes14010007
