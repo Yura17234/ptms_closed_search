@@ -135,6 +135,8 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
         filtered_msms_PTM = PTM_PSMs
 
     filtered_msms_PTM['Protein_Name'] = give_names(filtered_msms_PTM['accession_of_protein'])
+    # temporary filter
+    filtered_msms_PTM = filtered_msms_PTM[filtered_msms_PTM['Search'] != 'ADP-ribosylcysteine']
 
     ''' The number of PSMs, peptides and proteins found for each modification '''
     filtered_msms_PTM_psms = filtered_msms_PTM.drop_duplicates(
@@ -147,7 +149,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
         subset=['Search', 'accession_of_protein'],
         keep='first')
 
-    with sns.plotting_context("paper", font_scale=0.85), sns.axes_style('darkgrid',
+    with sns.plotting_context("paper", font_scale=1.5), sns.axes_style('darkgrid',
                                                                         {"grid.color": ".6", "grid.linestyle": ":"}):
         fig, axes = plt.subplots(3, 1, figsize=(10, 14))
         panels = [
