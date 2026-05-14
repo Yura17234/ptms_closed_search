@@ -136,7 +136,7 @@ def get_plots_from_result_of_analysis(SS_and_PTM_PSMs: pd.DataFrame, SS_peptides
 
     filtered_msms_PTM['Protein_Name'] = give_names(filtered_msms_PTM['accession_of_protein'])
     # temporary filter
-    filtered_msms_PTM = filtered_msms_PTM[filtered_msms_PTM['Search'] != 'ADP-ribosylcysteine']
+    # filtered_msms_PTM = filtered_msms_PTM[filtered_msms_PTM['Search'] != 'ADP-ribosylcysteine']
 
     ''' The number of PSMs, peptides and proteins found for each modification '''
     filtered_msms_PTM_psms = filtered_msms_PTM.drop_duplicates(
